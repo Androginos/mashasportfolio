@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { AnimatePresence } from "framer-motion";
 import {
   SketchbookBackdrop,
@@ -100,6 +100,19 @@ const languageOptions: { code: Language; label: string }[] = [
   { code: "pl", label: "Polish" },
 ];
 
+/** Eski clip-path bölgeleriyle uyumlu; parmak/mouse için normalize x,y */
+function toolAtNormalizedPosition(nx: number, ny: number): Tool | null {
+  if (nx < 0 || nx > 1 || ny < 0 || ny > 1) return null;
+  const pencilRightX = 0.6 + (0.56 - 0.6) * ny;
+  const brushLeftX = 0.42 + (0.46 - 0.42) * ny;
+  const inPencil = nx <= pencilRightX;
+  const inBrush = nx >= brushLeftX;
+  if (inPencil && inBrush) return nx < 0.5 ? "pencil" : "brush";
+  if (inPencil) return "pencil";
+  if (inBrush) return "brush";
+  return null;
+}
+
 export default function PortfolioClient({
   brushDrawings,
   pencilDrawings,
@@ -112,7 +125,32 @@ export default function PortfolioClient({
   /** Sadece açık albüm; kalem/fırça “basılı” görünümü buna bağlı değil */
   const [openAlbum, setOpenAlbum] = useState<Tool | null>(null);
   const [hoveredTool, setHoveredTool] = useState<Tool | null>(null);
+  const mascotHitRef = useRef<HTMLDivElement | null>(null);
   const t = translations[language];
+
+  const updateHoverFromPointer = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const el = mascotHitRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return;
+    const nx = (e.clientX - rect.left) / rect.width;
+    const ny = (e.clientY - rect.top) / rect.height;
+    setHoveredTool(toolAtNormalizedPosition(nx, ny));
+  };
+
+  const openToolFromPointer = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const el = mascotHitRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const nx = (e.clientX - rect.left) / rect.width;
+    const ny = (e.clientY - rect.top) / rect.height;
+    const tool = toolAtNormalizedPosition(nx, ny);
+    if (!tool) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setHoveredTool(null);
+    setOpenAlbum(tool);
+  };
 
   const toolLineLabel =
     hoveredTool === "pencil"
@@ -122,7 +160,7 @@ export default function PortfolioClient({
         : t.chooseTool;
 
   const renderIsoLine = (text: string) => (
-    <div className="flex flex-wrap items-center justify-center gap-1 md:gap-2">
+    <div className="flex w-full max-w-full flex-wrap items-center justify-center gap-1 md:gap-2">
       {text.split("").map((char, index) => (
         <span
           key={`${text}-${index}`}
@@ -196,10 +234,10 @@ export default function PortfolioClient({
         }`}
       >
         {!started ? (
-          <div className="flex min-h-[68vh] flex-col items-center justify-start gap-5 pt-10 md:min-h-[70vh] md:gap-6 md:pt-14">
+          <div className="flex min-h-[calc(100dvh-5.5rem)] w-full flex-col items-center justify-center gap-5 px-2 py-4 max-md:text-center md:min-h-[70vh] md:justify-start md:gap-6 md:pt-14">
             {renderIsoLine(t.titleTop)}
             {renderIsoLine(t.titleBottom)}
-            <p className="rounded-full border border-white/75 bg-white/85 px-6 py-3 text-base font-medium text-[#813f1a] shadow-md">
+            <p className="rounded-full border border-white/75 bg-white/85 px-6 py-3 text-center text-base font-medium text-[#813f1a] shadow-md">
               {t.clickToStart}
             </p>
           </div>
@@ -208,7 +246,10 @@ export default function PortfolioClient({
             {/*
               Tek kutu: karakter + kalem + fırça aynı ölçekte (absolute inset-0 katmanlar).
             */}
-            <div className="relative mx-auto aspect-square w-[min(96vw,700px)] max-w-[100%] shrink-0 md:-mt-2 md:w-[min(78vw,720px)]">
+            {/*
+              ~%40 daha büyük: önceki üst sınır 700/720 → 980/1008; vw biraz artırıldı.
+            */}
+            <div className="relative mx-auto aspect-square w-[min(99vw,980px)] max-w-[100%] shrink-0 md:-mt-2 md:w-[min(90vw,1008px)]">
               <Image
                 src="/mainchar.png"
                 alt={t.mascotAlt}
@@ -221,7 +262,7 @@ export default function PortfolioClient({
                 className={`pointer-events-none absolute inset-0 z-30 transition duration-200 ${
                   hoveredTool === "pencil"
                     ? "scale-[1.03] drop-shadow-[0_0_30px_rgba(255,66,196,0.95)]"
-                    : "hover:scale-[1.02] hover:drop-shadow-[0_0_24px_rgba(255,66,196,0.8)]"
+                    : "md:hover:scale-[1.02] md:hover:drop-shadow-[0_0_24px_rgba(255,66,196,0.8)]"
                 }`}
               >
                 <Image src="/pencil.png" alt={t.pencil} fill className="object-contain" />
@@ -231,42 +272,35 @@ export default function PortfolioClient({
                 className={`pointer-events-none absolute inset-0 z-40 transition duration-200 ${
                   hoveredTool === "brush"
                     ? "scale-[1.03] drop-shadow-[0_0_30px_rgba(255,66,196,0.95)]"
-                    : "hover:scale-[1.02] hover:drop-shadow-[0_0_24px_rgba(255,66,196,0.8)]"
+                    : "md:hover:scale-[1.02] md:hover:drop-shadow-[0_0_24px_rgba(255,66,196,0.8)]"
                 }`}
               >
                 <Image src="/brush.png" alt={t.brush} fill className="object-contain" />
               </div>
 
-              <button
-                type="button"
-                aria-label={t.pencil}
-                onMouseEnter={() => setHoveredTool("pencil")}
-                onMouseLeave={() => setHoveredTool(null)}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setHoveredTool(null);
-                  setOpenAlbum("pencil");
+              <div
+                ref={mascotHitRef}
+                role="presentation"
+                className="absolute inset-0 z-50 cursor-pointer touch-manipulation rounded-full"
+                style={{ touchAction: "manipulation" }}
+                onPointerMove={(e) => {
+                  if (e.pointerType === "mouse") updateHoverFromPointer(e);
                 }}
-                className="absolute inset-0 z-50 rounded-full"
-                style={{ clipPath: "polygon(0 0, 60% 0, 56% 100%, 0% 100%)" }}
-              />
-              <button
-                type="button"
-                aria-label={t.brush}
-                onMouseEnter={() => setHoveredTool("brush")}
-                onMouseLeave={() => setHoveredTool(null)}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setHoveredTool(null);
-                  setOpenAlbum("brush");
+                onPointerLeave={() => setHoveredTool(null)}
+                onPointerDown={(e) => {
+                  if (e.pointerType === "touch" || e.pointerType === "pen") {
+                    updateHoverFromPointer(e);
+                  }
                 }}
-                className="absolute inset-0 z-50 rounded-full"
-                style={{ clipPath: "polygon(42% 0, 100% 0, 100% 100%, 46% 100%)" }}
+                onPointerUp={(e) => {
+                  if (e.pointerType === "mouse" && e.button !== 0) return;
+                  openToolFromPointer(e);
+                }}
               />
             </div>
 
             <p
-              className={`iso-tool-text relative z-10 mx-auto mt-1 max-w-md px-3 py-2 text-center text-2xl font-extrabold tracking-wide transition-all duration-300 max-md:mt-2 md:mt-4 md:text-3xl ${
+              className={`iso-tool-text relative z-10 mx-auto mt-1 flex w-full max-w-md justify-center px-3 py-2 text-center text-2xl font-extrabold tracking-wide transition-all duration-300 max-md:mt-2 md:mt-4 md:text-3xl ${
                 hoveredTool ? "text-[#fff2e7]" : "text-[#fff6ee]"
               }`}
               style={{
@@ -275,7 +309,10 @@ export default function PortfolioClient({
                   : "1.4px 0 rgba(0,0,0,0.7), -1.4px 0 rgba(0,0,0,0.7), 0 1.4px rgba(0,0,0,0.7), 0 -1.4px rgba(0,0,0,0.7), 0 0 6px rgba(255, 182, 216, 0.24)",
               }}
             >
-              <span key={toolLineLabel} className="inline-block">
+              <span
+                key={toolLineLabel}
+                className="flex w-full flex-wrap justify-center"
+              >
                 {renderWaveText(toolLineLabel)}
               </span>
             </p>
