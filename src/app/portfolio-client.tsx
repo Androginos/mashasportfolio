@@ -188,7 +188,13 @@ export default function PortfolioClient({
         </div>
       </div>
 
-      <section className="relative z-10 w-full px-1 pb-2 pt-0 md:px-2 md:pb-3">
+      <section
+        className={`relative z-10 w-full px-1 pb-2 pt-0 md:px-2 md:pb-3 ${
+          started
+            ? "flex min-h-0 flex-1 flex-col md:block md:flex-none"
+            : ""
+        }`}
+      >
         {!started ? (
           <div className="flex min-h-[68vh] flex-col items-center justify-start gap-5 pt-10 md:min-h-[70vh] md:gap-6 md:pt-14">
             {renderIsoLine(t.titleTop)}
@@ -198,8 +204,11 @@ export default function PortfolioClient({
             </p>
           </div>
         ) : (
-          <div className="flex min-h-[68vh] w-full flex-col items-center justify-start pt-2 md:min-h-[70vh] md:pt-4">
-            <div className="relative mx-auto aspect-square w-[min(88vw,620px)] md:-mt-2 md:w-[min(72vw,620px)]">
+          <div className="flex w-full max-w-full flex-1 flex-col items-center justify-center gap-3 px-1 py-2 max-md:min-h-[calc(100dvh-5.75rem)] md:min-h-[70vh] md:flex-none md:justify-start md:gap-3 md:pt-4">
+            {/*
+              Tek kutu: karakter + kalem + fırça aynı ölçekte (absolute inset-0 katmanlar).
+            */}
+            <div className="relative mx-auto aspect-square w-[min(96vw,700px)] max-w-[100%] shrink-0 md:-mt-2 md:w-[min(78vw,720px)]">
               <Image
                 src="/mainchar.png"
                 alt={t.mascotAlt}
@@ -257,7 +266,7 @@ export default function PortfolioClient({
             </div>
 
             <p
-              className={`iso-tool-text relative z-10 mx-auto mt-3 max-w-md px-3 py-2 text-2xl font-extrabold tracking-wide transition-all duration-300 md:mt-4 md:text-3xl ${
+              className={`iso-tool-text relative z-10 mx-auto mt-1 max-w-md px-3 py-2 text-center text-2xl font-extrabold tracking-wide transition-all duration-300 max-md:mt-2 md:mt-4 md:text-3xl ${
                 hoveredTool ? "text-[#fff2e7]" : "text-[#fff6ee]"
               }`}
               style={{
