@@ -118,7 +118,7 @@ export default function PortfolioClient({
       {text.split("").map((char, index) => (
         <span
           key={`${text}-${index}`}
-          className="iso-letter text-7xl font-extrabold uppercase leading-tight text-[#fff2e7] md:text-9xl"
+          className="iso-letter text-5xl font-extrabold uppercase leading-tight text-[#fff2e7] sm:text-6xl md:text-8xl lg:text-9xl"
           style={{ animationDelay: `${index * 0.07}s` }}
         >
           {char === " " ? "\u00A0" : char}
