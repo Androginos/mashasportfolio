@@ -109,9 +109,17 @@ export default function PortfolioClient({
 }) {
   const [language, setLanguage] = useState<Language>("en");
   const [started, setStarted] = useState(false);
-  const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
+  /** Sadece açık albüm; kalem/fırça “basılı” görünümü buna bağlı değil */
+  const [openAlbum, setOpenAlbum] = useState<Tool | null>(null);
   const [hoveredTool, setHoveredTool] = useState<Tool | null>(null);
   const t = translations[language];
+
+  const toolLineLabel =
+    hoveredTool === "pencil"
+      ? t.pencilDrawings
+      : hoveredTool === "brush"
+        ? t.brushDrawings
+        : t.chooseTool;
 
   const renderIsoLine = (text: string) => (
     <div className="flex flex-wrap items-center justify-center gap-1 md:gap-2">
@@ -202,7 +210,7 @@ export default function PortfolioClient({
 
               <div
                 className={`pointer-events-none absolute inset-0 z-30 transition duration-200 ${
-                  selectedTool === "pencil" || hoveredTool === "pencil"
+                  hoveredTool === "pencil"
                     ? "scale-[1.03] drop-shadow-[0_0_30px_rgba(255,66,196,0.95)]"
                     : "hover:scale-[1.02] hover:drop-shadow-[0_0_24px_rgba(255,66,196,0.8)]"
                 }`}
@@ -212,7 +220,7 @@ export default function PortfolioClient({
 
               <div
                 className={`pointer-events-none absolute inset-0 z-40 transition duration-200 ${
-                  selectedTool === "brush" || hoveredTool === "brush"
+                  hoveredTool === "brush"
                     ? "scale-[1.03] drop-shadow-[0_0_30px_rgba(255,66,196,0.95)]"
                     : "hover:scale-[1.02] hover:drop-shadow-[0_0_24px_rgba(255,66,196,0.8)]"
                 }`}
@@ -227,7 +235,8 @@ export default function PortfolioClient({
                 onMouseLeave={() => setHoveredTool(null)}
                 onClick={(event) => {
                   event.stopPropagation();
-                  setSelectedTool("pencil");
+                  setHoveredTool(null);
+                  setOpenAlbum("pencil");
                 }}
                 className="absolute inset-0 z-50 rounded-full"
                 style={{ clipPath: "polygon(0 0, 60% 0, 56% 100%, 0% 100%)" }}
@@ -239,7 +248,8 @@ export default function PortfolioClient({
                 onMouseLeave={() => setHoveredTool(null)}
                 onClick={(event) => {
                   event.stopPropagation();
-                  setSelectedTool("brush");
+                  setHoveredTool(null);
+                  setOpenAlbum("brush");
                 }}
                 className="absolute inset-0 z-50 rounded-full"
                 style={{ clipPath: "polygon(42% 0, 100% 0, 100% 100%, 46% 100%)" }}
@@ -248,54 +258,45 @@ export default function PortfolioClient({
 
             <p
               className={`iso-tool-text relative z-10 mx-auto mt-3 max-w-md px-3 py-2 text-2xl font-extrabold tracking-wide transition-all duration-300 md:mt-4 md:text-3xl ${
-                hoveredTool ? "text-[#fff2e7]" : selectedTool ? "text-[#fff4ea]" : "text-[#fff6ee]"
+                hoveredTool ? "text-[#fff2e7]" : "text-[#fff6ee]"
               }`}
               style={{
-                textShadow:
-                  hoveredTool || selectedTool
-                    ? "1.6px 0 rgba(0,0,0,0.75), -1.6px 0 rgba(0,0,0,0.75), 0 1.6px rgba(0,0,0,0.75), 0 -1.6px rgba(0,0,0,0.75), 0 0 8px rgba(255, 182, 216, 0.32)"
-                    : "1.4px 0 rgba(0,0,0,0.7), -1.4px 0 rgba(0,0,0,0.7), 0 1.4px rgba(0,0,0,0.7), 0 -1.4px rgba(0,0,0,0.7), 0 0 6px rgba(255, 182, 216, 0.24)",
+                textShadow: hoveredTool
+                  ? "1.6px 0 rgba(0,0,0,0.75), -1.6px 0 rgba(0,0,0,0.75), 0 1.6px rgba(0,0,0,0.75), 0 -1.6px rgba(0,0,0,0.75), 0 0 8px rgba(255, 182, 216, 0.32)"
+                  : "1.4px 0 rgba(0,0,0,0.7), -1.4px 0 rgba(0,0,0,0.7), 0 1.4px rgba(0,0,0,0.7), 0 -1.4px rgba(0,0,0,0.7), 0 0 6px rgba(255, 182, 216, 0.24)",
               }}
             >
-              {renderWaveText(
-                hoveredTool === "pencil"
-                  ? t.pencilDrawings
-                  : hoveredTool === "brush"
-                    ? t.brushDrawings
-                    : selectedTool === "pencil"
-                      ? t.pencilDrawings
-                      : selectedTool === "brush"
-                        ? t.brushDrawings
-                        : t.chooseTool,
-              )}
+              <span key={toolLineLabel} className="inline-block">
+                {renderWaveText(toolLineLabel)}
+              </span>
             </p>
           </div>
         )}
       </section>
 
       <AnimatePresence>
-        {started && selectedTool ? (
+        {started && openAlbum ? (
           <SketchbookBackdrop
-            key={selectedTool}
+            key={openAlbum}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onBackdropClose={() => setSelectedTool(null)}
+            onBackdropClose={() => setOpenAlbum(null)}
           >
             <SketchbookBook
-              tool={selectedTool}
+              tool={openAlbum}
               albumTitle={
-                selectedTool === "brush"
+                openAlbum === "brush"
                   ? t.brushDrawings
                   : t.pencilDrawings
               }
               emptyAlbumMessage={
-                selectedTool === "brush"
+                openAlbum === "brush"
                   ? t.emptyBrushGallery
                   : t.emptyPencilGallery
               }
               uiLanguage={language}
-              onClose={() => setSelectedTool(null)}
+              onClose={() => setOpenAlbum(null)}
               brushDrawings={brushDrawings}
               pencilDrawings={pencilDrawings}
             />
