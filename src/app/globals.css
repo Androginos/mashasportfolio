@@ -1,0 +1,113 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffb066;
+  --foreground: #4a2f1f;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-luckiest-guy);
+}
+
+body {
+  position: relative;
+  background: #d4eee7;
+  color: var(--foreground);
+  font-family: var(--font-luckiest-guy), Arial, Helvetica, sans-serif;
+  font-size: 18px;
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 24 24' fill='none' stroke='%23ff8ac0' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath fill='%23ffe0f0' d='M12 2 14.8 8.2 21 9l-4.5 4.2 1.2 6-5.7-3.1-5.7 3.1 1.2-6L3 9l6.2-.8z'/%3E%3C/svg%3E")
+      8 8,
+    auto;
+}
+
+.luckiest-guy-regular {
+  font-family: "Luckiest Guy", cursive;
+  font-weight: 400;
+  font-style: normal;
+}
+
+* {
+  font-family: var(--font-luckiest-guy), "Luckiest Guy", cursive;
+}
+
+a,
+button,
+img {
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 24 24' fill='none' stroke='%23ff8ac0' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath fill='%23ffe0f0' d='M12 2 14.8 8.2 21 9l-4.5 4.2 1.2 6-5.7-3.1-5.7 3.1 1.2-6L3 9l6.2-.8z'/%3E%3C/svg%3E")
+      8 8,
+    pointer;
+}
+
+.wavy-frame {
+  border: 3px solid rgba(255, 255, 255, 0.88);
+  border-radius: 36% 64% 62% 38% / 40% 38% 62% 60%;
+}
+
+@keyframes floatIso {
+  0%,
+  100% {
+    transform: translateY(0px) rotateX(8deg) rotateY(-10deg) skewY(-2deg);
+  }
+  25% {
+    transform: translateY(-6px) rotateX(9deg) rotateY(-11deg) skewY(-1deg);
+  }
+  50% {
+    transform: translateY(-11px) rotateX(11deg) rotateY(-13deg) skewY(-1deg);
+  }
+  75% {
+    transform: translateY(-4px) rotateX(9deg) rotateY(-11deg) skewY(-1deg);
+  }
+}
+
+.iso-letter {
+  display: inline-block;
+  transform: rotateX(8deg) rotateY(-10deg) skewY(-2deg);
+  text-shadow:
+    1px 0 rgba(0, 0, 0, 0.45),
+    -1px 0 rgba(0, 0, 0, 0.45),
+    0 1px rgba(0, 0, 0, 0.45),
+    0 -1px rgba(0, 0, 0, 0.45),
+    0 0 6px rgba(255, 182, 216, 0.2);
+  animation: floatIso 1.9s ease-in-out infinite;
+  transition: transform 0.2s ease;
+}
+
+.iso-letter:hover {
+  transform: translateY(-10px) rotateX(14deg) rotateY(-16deg) scale(1.08);
+}
+
+.iso-tool-text {
+  transform: rotateX(4deg) rotateY(-6deg) skewY(-1deg);
+  letter-spacing: 0.03em;
+}
+
+@keyframes toolWave {
+  0%,
+  100% {
+    transform: rotateX(4deg) rotateY(-6deg) skewY(-1deg) translateY(0px);
+  }
+  50% {
+    transform: rotateX(5deg) rotateY(-7deg) skewY(-1deg) translateY(-3px);
+  }
+}
+
+.iso-tool-letter {
+  display: inline-block;
+  animation: toolWave 1.7s ease-in-out infinite;
+}
+
+.notebook-pink {
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255, 183, 209, 0.3) 0px,
+      rgba(255, 183, 209, 0.3) 2px,
+      transparent 2px,
+      transparent 28px
+    ),
+    linear-gradient(135deg, #ffe6f2 0%, #ffd9ee 52%, #ffeef7 100%);
+}

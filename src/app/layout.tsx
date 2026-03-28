@@ -1,0 +1,56 @@
+import type { Metadata } from "next";
+import {
+  Caveat,
+  Fredoka,
+  Itim,
+  Luckiest_Guy,
+  Quicksand,
+} from "next/font/google";
+import "./globals.css";
+
+const luckiestGuy = Luckiest_Guy({
+  weight: "400",
+  variable: "--font-luckiest-guy",
+  subsets: ["latin"],
+});
+
+const itim = Itim({
+  weight: ["400"],
+  variable: "--font-itim",
+  subsets: ["latin"],
+});
+
+const fredoka = Fredoka({
+  variable: "--font-fredoka",
+  subsets: ["latin"],
+});
+
+const quicksand = Quicksand({
+  variable: "--font-quicksand",
+  subsets: ["latin"],
+});
+
+const caveat = Caveat({
+  subsets: ["latin"],
+  variable: "--font-caveat",
+});
+
+export const metadata: Metadata = {
+  title: "Minik Sanatci Portfoy",
+  description: "9 yasindaki bir kiz cocugu icin cizim sergisi portfoyu",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html
+      lang="tr"
+      className={`${luckiestGuy.variable} ${itim.variable} ${fredoka.variable} ${quicksand.variable} ${caveat.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col">{children}</body>
+    </html>
+  );
+}

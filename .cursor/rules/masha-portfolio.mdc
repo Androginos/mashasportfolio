@@ -1,0 +1,51 @@
+---
+description: Masha portfolyo — mevcut sade akýþ ve stil kurallarý
+alwaysApply: false
+---
+
+# Masha Portfolio — Güncel Kurallar
+
+## Stack
+
+- Next.js (App Router), React, TypeScript, Tailwind CSS v4.
+- Remotion + @remotion/player arka plan shader için kurulu.
+- Site fontu: **Luckiest Guy** (global).
+- Temel metin boyutu: 18px.
+
+## Güncel Akýþ
+
+1. Açýlýþta büyük `MASHA'S` / `DRAWINGS` baþlýðý görünür.
+2. Sayfaya týklayýnca ana karakter sahnesi açýlýr.
+3. `pencil` ve `brush` görselleri üst üste, týklanabilir seçim mantýðý aktif.
+4. **Galeri/popup/kitap görünümü þu an tamamen kaldýrýlmýþtýr.**
+5. Yeni galeri tasarýmý gelene kadar seçim sadece state/baþlýk metnini etkiler.
+
+## Görseller
+
+- `public/mainchar.png`: Ana karakter.
+- `public/pencil.png` ve `public/brush.png`: Seçim overlayleri.
+- Yardýmcý eski görseller/klasörler olabilir ama aktif UI’da galeri render edilmez.
+
+## Dil ve UI
+
+- Dil seçimi sað üstte dropdown (glass stil).
+- Desteklenen diller: EN / UK / RU / PL.
+- Ana metinleri kullanýcý özellikle istemedikçe deðiþtirme.
+
+## Stil Notlarý
+
+- Baþlýk harfleri `iso-letter` sýnýfý ile harf bazlý animasyonlu.
+- Tool metni harf bazlý dalga (`iso-tool-letter`) ile akar.
+- Tool metninde turuncu + beyaz fosfor stroke/gölge uygulanýr.
+
+## Kod Konumu
+
+- Ana sayfa UI: `src/app/portfolio-client.tsx`
+- Sayfa giriþi: `src/app/page.tsx` (þu an sade, propssuz)
+- Genel stiller: `src/app/globals.css`
+- Font yükleme: `src/app/layout.tsx`
+- Shader: `src/components/PastelShaderRemotion.tsx`, `src/components/PastelShaderBackground.tsx`
+
+## Not
+
+- `AGENTS.md` içindeki Next.js sürüm uyarýlarýný dikkate al.
