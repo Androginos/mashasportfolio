@@ -128,6 +128,27 @@ img {
   will-change: transform;
 }
 
+/**
+ * TitleLetterDropGame — mobilde taşmayı önlemek için dar track/gap + vw’ye göre font.
+ * Uzun satır 8 harf: genişlik ≈ fontSize × (8×track + 7×gap) em birimi.
+ */
+.title-letter-drop-scale {
+  --tld-font-size: min(
+    6.65rem,
+    calc((100vw - 1.5rem) / 7.42)
+  );
+  --tld-track: 0.88em;
+  --tld-gap: 0.035em;
+}
+
+@media (min-width: 768px) {
+  .title-letter-drop-scale {
+    --tld-font-size: clamp(4rem, 11.5vw, 6.65rem);
+    --tld-track: 1.05em;
+    --tld-gap: 0.06em;
+  }
+}
+
 @keyframes splash-star-drift {
   from {
     opacity: 0.92;

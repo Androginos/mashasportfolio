@@ -70,15 +70,12 @@ interface CanvasParticle {
 const GRAVITY     = 0.52;
 const BOUNCE      = 0.30;
 const FRICTION    = 0.80;
-/** Büyük harflerle hizalı snap */
-const SNAP_RADIUS = 72;
-const FONT_SIZE = "clamp(4rem, 11.5vw, 6.65rem)";
-/**
- * Grid, başlıkla aynı fontSize kullanır; track/gap em ile ölçeklenir.
- * Böylece büyük başlıkta dar rem hücreler yüzünden binme olmaz; üst/alt aynı kural.
- */
-const LETTER_GRID_TRACK = "1.05em";
-const LETTER_GRID_GAP = "0.06em";
+/** Masaüstü üst sınır; mobilde container genişliğine göre küçültülür */
+const SNAP_RADIUS_MAX = 78;
+/** Başlık ölçeği + track/gap: globals.css `.title-letter-drop-scale` */
+const TLD_FONT = "var(--tld-font-size)";
+const TLD_TRACK = "var(--tld-track)";
+const TLD_GAP = "var(--tld-gap)";
 
 function formatScoreTemplate(template: string, score: number): string {
   return template.replace(/\{score\}/g, String(score));
@@ -312,12 +309,19 @@ export function TitleLetterDropGame({
   const dragOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const capturedPointerIdRef = useRef<number | null>(null);
   const particleBurstTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const slotsRef = useRef<SlotRect[]>([]);
+  const lettersRef = useRef<LetterState[]>([]);
+  const dragWindowCleanupRef = useRef<(() => void) | null>(null);
 
   const [letters, setLetters]   = useState<LetterState[]>(() => buildLetters(line1, line2));
   const [slots, setSlots]       = useState<SlotRect[]>([]);
   const [score, setScore]       = useState(0);
   const [allPlaced, setAllPlaced] = useState(false);
   const [gameReady, setGameReady] = useState(false);
+  /** Sürüklerken diğer harfleri tıklanamaz yap + fizik dondur */
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+
+  lettersRef.current = letters;
 
   // Canvas parçacık motoru
   const { burst } = useParticleCanvas(containerRef);
@@ -338,6 +342,10 @@ export function TitleLetterDropGame({
   }, []);
 
   useEffect(() => {
+    slotsRef.current = slots;
+  }, [slots]);
+
+  useEffect(() => {
     if (document.fonts?.ready) {
       void document.fonts.ready.then(measureSlots);
     } else {
@@ -353,6 +361,8 @@ export function TitleLetterDropGame({
         clearTimeout(particleBurstTimeoutRef.current);
         particleBurstTimeoutRef.current = null;
       }
+      dragWindowCleanupRef.current?.();
+      dragWindowCleanupRef.current = null;
     };
   }, []);
 
@@ -373,6 +383,8 @@ export function TitleLetterDropGame({
           if (l.landed)                      return l;
           if (l.char === "|")                return l;
           if (l.id === draggingIdRef.current) return l;
+          /* Parmak başka harflerin üstünden geçerken çarpışmayı önlemek için */
+          if (activeDragId && !l.placed)     return l;
 
           let { x, y, vx, vy, rotation, rotSpeed } = l;
           vy += GRAVITY;
@@ -408,7 +420,7 @@ export function TitleLetterDropGame({
 
     physicsRafRef.current = requestAnimationFrame(tick);
     return () => { if (physicsRafRef.current) cancelAnimationFrame(physicsRafRef.current); };
-  }, [gameReady]);
+  }, [gameReady, activeDragId]);
 
   // ── Tümü yerleşince ─────────────────────────────────────────────────────
 
@@ -444,62 +456,17 @@ export function TitleLetterDropGame({
     [burst],
   );
 
-  // ── Pointer down ────────────────────────────────────────────────────────
+  // ── Sürükleme bitişi (window + container; çift çağrıya dayanıklı) ─────────
 
-  const onLetterPointerDown = useCallback(
-    (e: ReactPointerEvent<HTMLDivElement>, id: string) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      setLetters((prev) => {
-        const letter = prev.find((l) => l.id === id);
-        if (!letter || letter.placed) return prev;
-        const container = containerRef.current;
-        if (!container) return prev;
-        const cr = container.getBoundingClientRect();
-        dragOffsetRef.current = {
-          x: e.clientX - cr.left - letter.x,
-          y: e.clientY - cr.top  - letter.y,
-        };
-        draggingIdRef.current = id;
-        capturedPointerIdRef.current = e.pointerId;
-        try {
-          container.setPointerCapture(e.pointerId);
-        } catch {
-          /* ignore */
-        }
-        return prev;
-      });
-    },
-    [],
-  );
-
-  // ── Pointer move ────────────────────────────────────────────────────────
-
-  const onPointerMove = useCallback((e: ReactPointerEvent<HTMLDivElement>) => {
+  const finishDrag = useCallback(() => {
     const id = draggingIdRef.current;
     if (!id) return;
-    const container = containerRef.current;
-    if (!container) return;
-    const cr = container.getBoundingClientRect();
-    const nx = e.clientX - cr.left - dragOffsetRef.current.x;
-    const ny = e.clientY - cr.top - dragOffsetRef.current.y;
 
-    setLetters((prev) =>
-      prev.map((l) =>
-        l.id === id
-          ? { ...l, x: nx, y: ny, vx: 0, vy: 0, rotation: 0, landed: false }
-          : l
-      )
-    );
-  }, []);
+    dragWindowCleanupRef.current?.();
+    dragWindowCleanupRef.current = null;
 
-  // ── Pointer up ──────────────────────────────────────────────────────────
-
-  const onPointerUp = useCallback(() => {
-    const id = draggingIdRef.current;
-    if (!id) return;
     draggingIdRef.current = null;
+    setActiveDragId(null);
 
     const container = containerRef.current;
     const capId = capturedPointerIdRef.current;
@@ -512,14 +479,17 @@ export function TitleLetterDropGame({
       }
     }
 
+    const w = container?.clientWidth ?? 360;
+    const snapR = Math.min(SNAP_RADIUS_MAX, Math.max(38, w * 0.19));
+
     setLetters((prev) => {
       const letter = prev.find((l) => l.id === id);
       if (!letter) return prev;
 
-      const slot = slots[letter.targetIndex];
+      const slot = slotsRef.current[letter.targetIndex];
       if (slot) {
         const d = dist(letter.x, letter.y, slot.x, slot.y);
-        if (d < SNAP_RADIUS) {
+        if (d < snapR) {
           spawnParticles(slot.x, slot.y);
           setScore((s) => s + 10);
           return prev.map((l) =>
@@ -534,7 +504,73 @@ export function TitleLetterDropGame({
         l.id === id ? { ...l, vx: rand(-1.5, 1.5), vy: -0.5, landed: false } : l
       );
     });
-  }, [slots, spawnParticles]);
+  }, [spawnParticles]);
+
+  // ── Pointer down ────────────────────────────────────────────────────────
+
+  const onLetterPointerDown = useCallback(
+    (e: ReactPointerEvent<HTMLDivElement>, id: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const letter = lettersRef.current.find((l) => l.id === id);
+      if (!letter || letter.placed) return;
+
+      const container = containerRef.current;
+      if (!container) return;
+
+      const cr = container.getBoundingClientRect();
+      dragOffsetRef.current = {
+        x: e.clientX - cr.left - letter.x,
+        y: e.clientY - cr.top - letter.y,
+      };
+      draggingIdRef.current = id;
+      capturedPointerIdRef.current = e.pointerId;
+      setActiveDragId(id);
+
+      try {
+        container.setPointerCapture(e.pointerId);
+      } catch {
+        /* ignore */
+      }
+
+      const pid = e.pointerId;
+      const onWinMove = (ev: PointerEvent) => {
+        if (ev.pointerId !== pid) return;
+        if (ev.cancelable) ev.preventDefault();
+        const c = containerRef.current;
+        if (!c) return;
+        const r = c.getBoundingClientRect();
+        const nx = ev.clientX - r.left - dragOffsetRef.current.x;
+        const ny = ev.clientY - r.top - dragOffsetRef.current.y;
+        const did = draggingIdRef.current;
+        if (!did) return;
+        setLetters((prev) =>
+          prev.map((l) =>
+            l.id === did
+              ? { ...l, x: nx, y: ny, vx: 0, vy: 0, rotation: 0, landed: false }
+              : l
+          )
+        );
+      };
+
+      const onWinEnd = (ev: PointerEvent) => {
+        if (ev.pointerId !== pid) return;
+        finishDrag();
+      };
+
+      dragWindowCleanupRef.current?.();
+      window.addEventListener("pointermove", onWinMove, { passive: false });
+      window.addEventListener("pointerup", onWinEnd);
+      window.addEventListener("pointercancel", onWinEnd);
+      dragWindowCleanupRef.current = () => {
+        window.removeEventListener("pointermove", onWinMove);
+        window.removeEventListener("pointerup", onWinEnd);
+        window.removeEventListener("pointercancel", onWinEnd);
+      };
+    },
+    [finishDrag],
+  );
 
   // ── Render ───────────────────────────────────────────────────────────────
 
@@ -544,11 +580,13 @@ export function TitleLetterDropGame({
   return (
     <div
       ref={containerRef}
-      className="relative w-full select-none"
-      style={{ minHeight: "240px", height: "clamp(240px, 40vw, 360px)" }}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerLeave={onPointerUp}
+      className="title-letter-drop-scale relative w-full max-w-full select-none touch-none"
+      style={{
+        minHeight: "240px",
+        height: "clamp(240px, 40vw, 360px)",
+        touchAction: "none",
+        overscrollBehavior: "contain",
+      }}
     >
 
       {/* ── Silüet slotlar ───────────────────────────────────────────── */}
@@ -558,16 +596,16 @@ export function TitleLetterDropGame({
         aria-hidden
       >
         <div
-          className="mx-auto flex w-full max-w-[min(96vw,52rem)] justify-center px-1"
+          className="mx-auto flex w-full max-w-[100%] justify-center px-0 min-[768px]:max-w-[min(96vw,52rem)] min-[768px]:px-1"
         >
           <div
             style={{
               display:          "inline-grid",
               fontFamily:       "var(--font-luckiest-guy), 'Luckiest Guy', cursive",
-              fontSize:         FONT_SIZE,
+              fontSize:         TLD_FONT,
               lineHeight:       1,
-              gridTemplateColumns: `repeat(${line1.length}, ${LETTER_GRID_TRACK})`,
-              columnGap:        LETTER_GRID_GAP,
+              gridTemplateColumns: `repeat(${line1.length}, ${TLD_TRACK})`,
+              columnGap:        TLD_GAP,
               alignItems:       "center",
               justifyItems:     "center",
             }}
@@ -584,7 +622,7 @@ export function TitleLetterDropGame({
                 width:            "100%",
                 minWidth:         0,
                 fontFamily:       "var(--font-luckiest-guy), 'Luckiest Guy', cursive",
-                fontSize:         FONT_SIZE,
+                fontSize:         TLD_FONT,
                 lineHeight:       1,
                 letterSpacing:    "normal",
                 textAlign:        "center",
@@ -602,16 +640,16 @@ export function TitleLetterDropGame({
         </div>
 
         <div
-          className="mx-auto flex w-full max-w-[min(96vw,52rem)] justify-center px-1"
+          className="mx-auto flex w-full max-w-[100%] justify-center px-0 min-[768px]:max-w-[min(96vw,52rem)] min-[768px]:px-1"
         >
           <div
             style={{
               display:          "inline-grid",
               fontFamily:       "var(--font-luckiest-guy), 'Luckiest Guy', cursive",
-              fontSize:         FONT_SIZE,
+              fontSize:         TLD_FONT,
               lineHeight:       1,
-              gridTemplateColumns: `repeat(${line2.length}, ${LETTER_GRID_TRACK})`,
-              columnGap:        LETTER_GRID_GAP,
+              gridTemplateColumns: `repeat(${line2.length}, ${TLD_TRACK})`,
+              columnGap:        TLD_GAP,
               alignItems:       "center",
               justifyItems:     "center",
             }}
@@ -630,7 +668,7 @@ export function TitleLetterDropGame({
                   width:            "100%",
                   minWidth:         0,
                   fontFamily:       "var(--font-luckiest-guy), 'Luckiest Guy', cursive",
-                  fontSize:         FONT_SIZE,
+                  fontSize:         TLD_FONT,
                   lineHeight:       1,
                   letterSpacing:    "normal",
                   textAlign:        "center",
@@ -688,8 +726,11 @@ export function TitleLetterDropGame({
       {letters.map((l) => {
         if (l.char === "|") return null;
         const elapsed    = Date.now() - startTimeRef.current;
-        const isDragging = draggingIdRef.current === l.id;
+        const isDragging = activeDragId === l.id;
         if (elapsed < l.delay && !l.landed && !l.placed) return null;
+
+        const blockOthers =
+          activeDragId != null && activeDragId !== l.id && !l.placed;
 
         const waveIx =
           l.targetIndex > line1.length ? l.targetIndex - 1 : l.targetIndex;
@@ -705,7 +746,7 @@ export function TitleLetterDropGame({
               top:         l.y,
               transform:   `translate(-50%, -50%) rotate(${l.placed || isDragging ? 0 : l.rotation}deg) scale(${isDragging ? 1.12 : 1})`,
               fontFamily:  "var(--font-luckiest-guy), 'Luckiest Guy', cursive",
-              fontSize:    FONT_SIZE,
+              fontSize:    TLD_FONT,
               lineHeight:  1,
               letterSpacing: 0,
               display:     "inline-block",
@@ -719,12 +760,13 @@ export function TitleLetterDropGame({
                   : "2px 3px 0 rgba(0,0,0,0.28),0 0 10px rgba(255,110,199,0.25)",
               userSelect:  "none",
               cursor:      l.placed ? "default" : isDragging ? "grabbing" : "grab",
-              zIndex:      isDragging ? 40 : l.placed ? 5 : 20,
+              zIndex:      isDragging ? 120 : l.placed ? 5 : 20,
               transition:  l.placed
                 ? "transform 0.28s cubic-bezier(0.34,1.56,0.64,1)"
                 : "none",
               willChange:  "transform",
               touchAction: "none",
+              pointerEvents: blockOthers ? "none" : "auto",
             }}
           >
             {l.placed ? (

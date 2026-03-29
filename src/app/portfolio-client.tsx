@@ -229,7 +229,7 @@ export default function PortfolioClient({
         }`}
       >
         {!started ? (
-          <div className="flex min-h-[calc(100dvh-5.5rem)] w-full flex-col items-center justify-center gap-5 px-2 py-4 max-md:text-center md:min-h-[70vh] md:justify-start md:gap-6 md:pt-14">
+          <div className="flex min-h-[calc(100dvh-5.5rem)] w-full max-w-full flex-col items-center justify-center gap-5 overflow-x-hidden px-2 py-4 max-md:text-center md:min-h-[70vh] md:justify-start md:gap-6 md:pt-14">
             <TitleLetterDropGame
               line1={t.titleTop}
               line2={t.titleBottom}
