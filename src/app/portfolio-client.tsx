@@ -8,6 +8,7 @@ import {
   SketchbookBook,
 } from "@/components/SketchbookPopup";
 import { PastelShaderBackground } from "@/components/PastelShaderBackground";
+import { TitleLetterDropGame } from "@/components/TitleLetterDropGame";
 import type { SketchbookDrawing } from "@/lib/publicDrawings";
 
 type Language = "en" | "uk" | "ru" | "pl";
@@ -29,13 +30,16 @@ const translations: Record<
     emptyPencilGallery: string;
     emptyBrushGallery: string;
     mascotAlt: string;
+    /** Başlık oyunu: {score} yer tutucu */
+    titleGameScoreFmt: string;
+    titleGameCompleteFmt: string;
   }
 > = {
   en: {
     badge: "Little Artist Drawing Exhibition",
     titleTop: "MASHA'S",
     titleBottom: "DRAWINGS",
-    clickToStart: "Click anywhere to start",
+    clickToStart: "Click here for my Portfolio",
     chooseTool: "Choose a tool",
     pencil: "Pencil",
     brush: "Brush",
@@ -45,12 +49,14 @@ const translations: Record<
     emptyPencilGallery: "No pencil drawings yet. Add images to gallery/pencil.",
     emptyBrushGallery: "No brush drawings yet. Add images to gallery/brush.",
     mascotAlt: "Main character",
+    titleGameScoreFmt: "⭐ {score} points",
+    titleGameCompleteFmt: "🎉 {score} points! Great!",
   },
   uk: {
     badge: "Виставка малюнків маленької художниці",
     titleTop: "MASHA'S",
     titleBottom: "DRAWINGS",
-    clickToStart: "Натисніть будь-де, щоб почати",
+    clickToStart: "Натисніть тут для мого портфоліо",
     chooseTool: "Оберіть інструмент",
     pencil: "Олівець",
     brush: "Пензлик",
@@ -60,12 +66,14 @@ const translations: Record<
     emptyPencilGallery: "Поки немає малюнків олівцем. Додайте файли в gallery/pencil.",
     emptyBrushGallery: "Поки немає малюнків пензликом. Додайте файли в gallery/brush.",
     mascotAlt: "Головний персонаж",
+    titleGameScoreFmt: "⭐ {score} балів",
+    titleGameCompleteFmt: "🎉 {score} балів! Чудово!",
   },
   ru: {
     badge: "Выставка рисунков маленькой художницы",
     titleTop: "MASHA'S",
     titleBottom: "DRAWINGS",
-    clickToStart: "Нажмите в любом месте, чтобы начать",
+    clickToStart: "Нажмите сюда, чтобы открыть мое портфолио",
     chooseTool: "Выберите инструмент",
     pencil: "Карандаш",
     brush: "Кисть",
@@ -75,12 +83,14 @@ const translations: Record<
     emptyPencilGallery: "Пока нет рисунков карандашом. Добавьте файлы в gallery/pencil.",
     emptyBrushGallery: "Пока нет рисунков кистью. Добавьте файлы в gallery/brush.",
     mascotAlt: "Главный персонаж",
+    titleGameScoreFmt: "⭐ {score} очков",
+    titleGameCompleteFmt: "🎉 {score} очков! Отлично!",
   },
   pl: {
     badge: "Wystawa rysunków małej artystki",
     titleTop: "MASHA'S",
     titleBottom: "DRAWINGS",
-    clickToStart: "Kliknij gdziekolwiek, aby zaczac",
+    clickToStart: "Kliknij tutaj, aby zobaczyć moje portfolio",
     chooseTool: "Wybierz narzedzie",
     pencil: "Olowek",
     brush: "Pedzel",
@@ -90,6 +100,8 @@ const translations: Record<
     emptyPencilGallery: "Brak rysunkow olowkiem. Dodaj pliki do gallery/pencil.",
     emptyBrushGallery: "Brak rysunkow pedzlem. Dodaj pliki do gallery/brush.",
     mascotAlt: "Glowna postac",
+    titleGameScoreFmt: "⭐ {score} pkt",
+    titleGameCompleteFmt: "🎉 {score} pkt! Świetnie!",
   },
 };
 
@@ -159,20 +171,6 @@ export default function PortfolioClient({
         ? t.brushDrawings
         : t.chooseTool;
 
-  const renderIsoLine = (text: string) => (
-    <div className="flex w-full max-w-full flex-wrap items-center justify-center gap-1 md:gap-2">
-      {text.split("").map((char, index) => (
-        <span
-          key={`${text}-${index}`}
-          className="iso-letter text-5xl font-extrabold uppercase leading-tight text-[#fff2e7] sm:text-6xl md:text-8xl lg:text-9xl"
-          style={{ animationDelay: `${index * 0.07}s` }}
-        >
-          {char === " " ? "\u00A0" : char}
-        </span>
-      ))}
-    </div>
-  );
-
   const renderWaveText = (text: string) => (
     <span className="inline-flex flex-wrap items-center justify-center gap-[1px]">
       {text.split("").map((char, index) => (
@@ -191,9 +189,6 @@ export default function PortfolioClient({
     <main
       lang={language}
       className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col items-center justify-center px-6 py-4 text-center md:py-6"
-      onClick={() => {
-        if (!started) setStarted(true);
-      }}
     >
       <PastelShaderBackground />
       <div
@@ -235,21 +230,53 @@ export default function PortfolioClient({
       >
         {!started ? (
           <div className="flex min-h-[calc(100dvh-5.5rem)] w-full flex-col items-center justify-center gap-5 px-2 py-4 max-md:text-center md:min-h-[70vh] md:justify-start md:gap-6 md:pt-14">
-            {renderIsoLine(t.titleTop)}
-            {renderIsoLine(t.titleBottom)}
-            <p className="rounded-full border border-white/75 bg-white/85 px-6 py-3 text-center text-base font-medium text-[#813f1a] shadow-md">
+            <TitleLetterDropGame
+              line1={t.titleTop}
+              line2={t.titleBottom}
+              scoreFmt={t.titleGameScoreFmt}
+              completeFmt={t.titleGameCompleteFmt}
+            />
+            <button
+              type="button"
+              className="rounded-full border border-white/75 bg-white/85 px-6 py-3 text-center text-base font-medium text-[#813f1a] shadow-md transition hover:bg-white/95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c76b9e]"
+              onClick={(e) => {
+                e.stopPropagation();
+                setStarted(true);
+              }}
+            >
               {t.clickToStart}
-            </p>
+            </button>
           </div>
         ) : (
-          <div className="flex w-full max-w-full flex-1 flex-col items-center justify-center gap-3 px-1 py-2 max-md:min-h-[calc(100dvh-5.75rem)] md:min-h-[70vh] md:flex-none md:justify-start md:gap-3 md:pt-4">
+          <div className="flex w-full max-w-full flex-1 flex-col px-1 py-2 max-md:min-h-[calc(100dvh-5.75rem)] max-md:justify-center md:min-h-[70vh] md:flex-none md:justify-start md:pt-4">
+            <div className="flex w-full flex-col items-center gap-0.5 md:min-h-0 md:flex-1 md:gap-1.5">
+              <p
+                className={`iso-tool-text relative z-10 mx-auto flex w-full max-w-md shrink-0 justify-center px-3 py-0 text-center text-2xl font-extrabold tracking-wide transition-all duration-300 md:text-3xl ${
+                  hoveredTool ? "text-[#fff2e7]" : "text-[#fff6ee]"
+                }`}
+                style={{
+                  textShadow: hoveredTool
+                    ? "1.6px 0 rgba(0,0,0,0.75), -1.6px 0 rgba(0,0,0,0.75), 0 1.6px rgba(0,0,0,0.75), 0 -1.6px rgba(0,0,0,0.75), 0 0 8px rgba(255, 182, 216, 0.32)"
+                    : "1.4px 0 rgba(0,0,0,0.7), -1.4px 0 rgba(0,0,0,0.7), 0 1.4px rgba(0,0,0,0.7), 0 -1.4px rgba(0,0,0,0.7), 0 0 6px rgba(255, 182, 216, 0.24)",
+                }}
+              >
+                <span
+                  key={toolLineLabel}
+                  className="flex w-full flex-wrap justify-center"
+                >
+                  {renderWaveText(toolLineLabel)}
+                </span>
+              </p>
+
+              <div className="flex w-full shrink-0 flex-col items-center justify-center md:min-h-0 md:flex-1">
             {/*
               Tek kutu: karakter + kalem + fırça aynı ölçekte (absolute inset-0 katmanlar).
             */}
             {/*
-              ~%40 daha büyük: önceki üst sınır 700/720 → 980/1008; vw biraz artırıldı.
+              Mobil: geniş ekran hissi (yüksek px üst sınırı, tam genişlik vw).
+              Masaüstü (md+): tarayıcıda ~%20 daha küçük → önceki 90vw/1008 → 72vw/806.
             */}
-            <div className="relative mx-auto aspect-square w-[min(99vw,980px)] max-w-[100%] shrink-0 md:-mt-2 md:w-[min(90vw,1008px)]">
+            <div className="relative mx-auto aspect-square w-[min(100vw,1024px)] max-w-[100%] shrink-0 md:w-[min(72vw,806px)]">
               <Image
                 src="/mainchar.png"
                 alt={t.mascotAlt}
@@ -298,24 +325,8 @@ export default function PortfolioClient({
                 }}
               />
             </div>
-
-            <p
-              className={`iso-tool-text relative z-10 mx-auto mt-1 flex w-full max-w-md justify-center px-3 py-2 text-center text-2xl font-extrabold tracking-wide transition-all duration-300 max-md:mt-2 md:mt-4 md:text-3xl ${
-                hoveredTool ? "text-[#fff2e7]" : "text-[#fff6ee]"
-              }`}
-              style={{
-                textShadow: hoveredTool
-                  ? "1.6px 0 rgba(0,0,0,0.75), -1.6px 0 rgba(0,0,0,0.75), 0 1.6px rgba(0,0,0,0.75), 0 -1.6px rgba(0,0,0,0.75), 0 0 8px rgba(255, 182, 216, 0.32)"
-                  : "1.4px 0 rgba(0,0,0,0.7), -1.4px 0 rgba(0,0,0,0.7), 0 1.4px rgba(0,0,0,0.7), 0 -1.4px rgba(0,0,0,0.7), 0 0 6px rgba(255, 182, 216, 0.24)",
-              }}
-            >
-              <span
-                key={toolLineLabel}
-                className="flex w-full flex-wrap justify-center"
-              >
-                {renderWaveText(toolLineLabel)}
-              </span>
-            </p>
+              </div>
+            </div>
           </div>
         )}
       </section>

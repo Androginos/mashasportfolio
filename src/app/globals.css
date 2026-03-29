@@ -100,6 +100,50 @@ img {
   animation: toolWave 1.7s ease-in-out infinite;
 }
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* TitleLetterDropGame — yerleşmiş harf dalga (sıra gecikmesi inline) */
+@keyframes title-drop-placed-wave {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+.title-drop-placed-wave {
+  display: inline-block;
+  animation: title-drop-placed-wave 1.55s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes splash-star-drift {
+  from {
+    opacity: 0.92;
+    transform: translate(-50%, -50%) translate(0, 0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(var(--dx, 0px), var(--dy, 0px))
+      scale(0.18);
+  }
+}
+
+.splash-star-particle {
+  animation: splash-star-drift 0.52s cubic-bezier(0.25, 0.9, 0.35, 1) forwards;
+}
+
 .notebook-pink {
   background:
     repeating-linear-gradient(
