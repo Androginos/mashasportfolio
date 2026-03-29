@@ -21,7 +21,7 @@ export const PastelShaderBackground = () => {
   }, []);
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-0 h-screen w-screen overflow-hidden">
+    <div className="pastel-shader-backdrop pointer-events-none fixed inset-0 z-0 w-full overflow-hidden">
       <Player
         component={PastelShaderRemotion}
         durationInFrames={60 * 60}
@@ -32,10 +32,12 @@ export const PastelShaderBackground = () => {
         autoPlay
         loop
         controls={false}
+        className="pastel-shader-player h-full w-full"
         style={{
           width: "100%",
           height: "100%",
           opacity: 1,
+          display: "block",
         }}
       />
     </div>

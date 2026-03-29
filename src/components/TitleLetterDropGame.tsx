@@ -580,10 +580,10 @@ export function TitleLetterDropGame({
   return (
     <div
       ref={containerRef}
-      className="title-letter-drop-scale relative w-full max-w-full select-none touch-none"
+      className="title-letter-drop-scale relative w-full max-w-full select-none touch-none max-md:overflow-visible max-md:px-1 max-md:pb-2 max-md:pt-1"
       style={{
-        minHeight: "240px",
-        height: "clamp(240px, 40vw, 360px)",
+        minHeight: "min(280px, 52vw)",
+        height: "clamp(260px, 48vw, 360px)",
         touchAction: "none",
         overscrollBehavior: "contain",
       }}
@@ -596,14 +596,14 @@ export function TitleLetterDropGame({
         aria-hidden
       >
         <div
-          className="mx-auto flex w-full max-w-[100%] justify-center px-0 min-[768px]:max-w-[min(96vw,52rem)] min-[768px]:px-1"
+          className="mx-auto flex w-full max-w-[100%] justify-center px-1 min-[768px]:max-w-[min(96vw,52rem)] min-[768px]:px-1"
         >
           <div
             style={{
               display:          "inline-grid",
               fontFamily:       "var(--font-luckiest-guy), 'Luckiest Guy', cursive",
               fontSize:         TLD_FONT,
-              lineHeight:       1,
+              lineHeight:       1.08,
               gridTemplateColumns: `repeat(${line1.length}, ${TLD_TRACK})`,
               columnGap:        TLD_GAP,
               alignItems:       "center",
@@ -623,7 +623,7 @@ export function TitleLetterDropGame({
                 minWidth:         0,
                 fontFamily:       "var(--font-luckiest-guy), 'Luckiest Guy', cursive",
                 fontSize:         TLD_FONT,
-                lineHeight:       1,
+                lineHeight:       1.08,
                 letterSpacing:    "normal",
                 textAlign:        "center",
                 color:            "transparent",
@@ -631,6 +631,7 @@ export function TitleLetterDropGame({
                 userSelect:       "none",
                 opacity:          letters[i]?.placed ? 0 : 1,
                 transition:       "opacity 0.25s ease",
+                paddingBlock:     "0.06em",
               }}
             >
               {char === " " ? "\u00A0" : char}
@@ -640,14 +641,14 @@ export function TitleLetterDropGame({
         </div>
 
         <div
-          className="mx-auto flex w-full max-w-[100%] justify-center px-0 min-[768px]:max-w-[min(96vw,52rem)] min-[768px]:px-1"
+          className="mx-auto flex w-full max-w-[100%] justify-center px-1 min-[768px]:max-w-[min(96vw,52rem)] min-[768px]:px-1"
         >
           <div
             style={{
               display:          "inline-grid",
               fontFamily:       "var(--font-luckiest-guy), 'Luckiest Guy', cursive",
               fontSize:         TLD_FONT,
-              lineHeight:       1,
+              lineHeight:       1.08,
               gridTemplateColumns: `repeat(${line2.length}, ${TLD_TRACK})`,
               columnGap:        TLD_GAP,
               alignItems:       "center",
@@ -669,7 +670,7 @@ export function TitleLetterDropGame({
                   minWidth:         0,
                   fontFamily:       "var(--font-luckiest-guy), 'Luckiest Guy', cursive",
                   fontSize:         TLD_FONT,
-                  lineHeight:       1,
+                  lineHeight:       1.08,
                   letterSpacing:    "normal",
                   textAlign:        "center",
                   color:            "transparent",
@@ -677,6 +678,7 @@ export function TitleLetterDropGame({
                   userSelect:       "none",
                   opacity:          letters[gi]?.placed ? 0 : 1,
                   transition:       "opacity 0.25s ease",
+                  paddingBlock:     "0.06em",
                 }}
               >
                 {char === " " ? "\u00A0" : char}

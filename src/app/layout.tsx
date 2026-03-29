@@ -50,7 +50,7 @@ export default function RootLayout({
       lang="tr"
       className={`${luckiestGuy.variable} ${itim.variable} ${fredoka.variable} ${quicksand.variable} ${caveat.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="flex min-h-full min-h-[100dvh] flex-col">{children}</body>
     </html>
   );
 }
