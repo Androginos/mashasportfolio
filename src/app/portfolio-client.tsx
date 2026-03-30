@@ -9,6 +9,7 @@ import {
 } from "@/components/SketchbookPopup";
 import { PastelShaderBackground } from "@/components/PastelShaderBackground";
 import { TitleLetterDropGame } from "@/components/TitleLetterDropGame";
+import { mascotPngSrc } from "@/lib/mascotAssets";
 import type { SketchbookDrawing } from "@/lib/publicDrawings";
 
 type Language = "en" | "uk" | "ru" | "pl";
@@ -278,7 +279,7 @@ export default function PortfolioClient({
             */}
             <div className="relative mx-auto aspect-square w-[min(100vw,1024px)] max-w-[100%] shrink-0 md:w-[min(72vw,806px)]">
               <Image
-                src="/mainchar.png"
+                src={mascotPngSrc("mainchar")}
                 alt={t.mascotAlt}
                 fill
                 priority
@@ -286,23 +287,33 @@ export default function PortfolioClient({
               />
 
               <div
-                className={`pointer-events-none absolute inset-0 z-30 transition duration-200 ${
+                className={`pointer-events-none absolute inset-0 z-30 origin-center transition-transform duration-300 ease-out ${
                   hoveredTool === "pencil"
-                    ? "scale-[1.03] drop-shadow-[0_0_30px_rgba(255,66,196,0.95)]"
-                    : "md:hover:scale-[1.02] md:hover:drop-shadow-[0_0_24px_rgba(255,66,196,0.8)]"
+                    ? "scale-[1.08] drop-shadow-[0_0_32px_rgba(255,66,196,0.95)]"
+                    : "scale-100"
                 }`}
               >
-                <Image src="/pencil.png" alt={t.pencil} fill className="object-contain" />
+                <Image
+                  src={mascotPngSrc("pencil")}
+                  alt={t.pencil}
+                  fill
+                  className="object-contain"
+                />
               </div>
 
               <div
-                className={`pointer-events-none absolute inset-0 z-40 transition duration-200 ${
+                className={`pointer-events-none absolute inset-0 z-40 origin-center transition-transform duration-300 ease-out ${
                   hoveredTool === "brush"
-                    ? "scale-[1.03] drop-shadow-[0_0_30px_rgba(255,66,196,0.95)]"
-                    : "md:hover:scale-[1.02] md:hover:drop-shadow-[0_0_24px_rgba(255,66,196,0.8)]"
+                    ? "scale-[1.08] drop-shadow-[0_0_32px_rgba(255,66,196,0.95)]"
+                    : "scale-100"
                 }`}
               >
-                <Image src="/brush.png" alt={t.brush} fill className="object-contain" />
+                <Image
+                  src={mascotPngSrc("brush")}
+                  alt={t.brush}
+                  fill
+                  className="object-contain"
+                />
               </div>
 
               <div

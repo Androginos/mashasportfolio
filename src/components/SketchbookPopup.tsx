@@ -16,6 +16,7 @@ import {
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import { mascotPngSrc } from "@/lib/mascotAssets";
 import type { SketchbookDrawing } from "@/lib/publicDrawings";
 
 export type SketchbookTool = "brush" | "pencil";
@@ -116,18 +117,11 @@ function initialFlipState(total: number): FlipState {
   };
 }
 
-function useFlip(total: number, resetKey: string) {
+function useFlip(total: number) {
   const [s, setS] = useState<FlipState>(() => initialFlipState(total));
   const t1 = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const t2 = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const flipGen = useRef(0);
-
-  useEffect(() => {
-    clearTimeout(t1.current);
-    clearTimeout(t2.current);
-    flipGen.current += 1;
-    setS(initialFlipState(total));
-  }, [total, resetKey]);
 
   useEffect(
     () => () => {
@@ -349,7 +343,8 @@ SketchbookBackdropBase.displayName = "SketchbookBackdropBase";
 
 export const SketchbookBackdrop = motion(SketchbookBackdropBase);
 
-export function SketchbookBook({
+/** total veya tool değişince sayfa çevirme state’i sıfırlansın diye üstte key ile yeniden mount edilir. */
+function SketchbookBookInner({
   tool,
   onClose,
   albumTitle,
@@ -360,8 +355,7 @@ export function SketchbookBook({
 }: SketchbookBookProps) {
   const drawings = tool === "brush" ? brushDrawings : pencilDrawings;
   const total = drawings.length;
-  const resetKey = `${tool}-${total}`;
-  const { s, flip, canNext, canPrev } = useFlip(total, resetKey);
+  const { s, flip, canNext, canPrev } = useFlip(total);
   const drag = useDrag(flip);
 
   useEffect(() => {
@@ -556,6 +550,13 @@ export function SketchbookBook({
   );
 }
 
+export function SketchbookBook(props: SketchbookBookProps) {
+  const drawings = props.tool === "brush" ? props.brushDrawings : props.pencilDrawings;
+  const total = drawings.length;
+  const flipResetKey = `${props.tool}-${total}`;
+  return <SketchbookBookInner key={flipResetKey} {...props} />;
+}
+
 interface ToolButtonsProps {
   onSelect: (tool: SketchbookTool) => void;
 }
@@ -565,7 +566,7 @@ export function SketchbookToolButtons({ onSelect }: ToolButtonsProps) {
     <div className="relative inline-flex items-end justify-center">
       <div className="relative h-64 w-48 select-none">
         <Image
-          src="/mainchar.png"
+          src={mascotPngSrc("mainchar")}
           alt="Kız karakteri"
           fill
           className="object-contain object-bottom"
@@ -584,7 +585,7 @@ export function SketchbookToolButtons({ onSelect }: ToolButtonsProps) {
       >
         <div className="relative h-12 w-12 drop-shadow-lg">
           <Image
-            src="/brush.png"
+            src={mascotPngSrc("brush")}
             alt="Fırça"
             fill
             className="object-contain"
@@ -604,7 +605,7 @@ export function SketchbookToolButtons({ onSelect }: ToolButtonsProps) {
       >
         <div className="relative h-10 w-10 drop-shadow-lg">
           <Image
-            src="/pencil.png"
+            src={mascotPngSrc("pencil")}
             alt="Kalem"
             fill
             className="object-contain"

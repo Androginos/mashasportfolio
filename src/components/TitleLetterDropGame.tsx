@@ -304,24 +304,31 @@ export function TitleLetterDropGame({
   const containerRef  = useRef<HTMLDivElement>(null);
   const slotRefs      = useRef<(HTMLSpanElement | null)[]>([]);
   const physicsRafRef = useRef<number | null>(null);
-  const startTimeRef  = useRef<number>(Date.now());
+  const startTimeRef = useRef<number | null>(null);
   const draggingIdRef = useRef<string | null>(null);
   const dragOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const capturedPointerIdRef = useRef<number | null>(null);
   const particleBurstTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const slotsRef = useRef<SlotRect[]>([]);
-  const lettersRef = useRef<LetterState[]>([]);
   const dragWindowCleanupRef = useRef<(() => void) | null>(null);
 
   const [letters, setLetters]   = useState<LetterState[]>(() => buildLetters(line1, line2));
   const [slots, setSlots]       = useState<SlotRect[]>([]);
   const [score, setScore]       = useState(0);
-  const [allPlaced, setAllPlaced] = useState(false);
   const [gameReady, setGameReady] = useState(false);
+  /** RAF ile güncellenir; render’da Date.now / ref okuma yok (eslint). */
+  const [elapsedMs, setElapsedMs] = useState(0);
   /** Sürüklerken diğer harfleri tıklanamaz yap + fizik dondur */
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
 
-  lettersRef.current = letters;
+  const realLetters = letters.filter((l) => l.char !== "|");
+  const allPlaced =
+    realLetters.length > 0 && realLetters.every((l) => l.placed);
+
+  const completionFiredRef = useRef(false);
+  useEffect(() => {
+    completionFiredRef.current = false;
+  }, [line1, line2]);
 
   // Canvas parçacık motoru
   const { burst } = useParticleCanvas(containerRef);
@@ -373,8 +380,10 @@ export function TitleLetterDropGame({
     if (!container || !gameReady) return;
 
     const tick = () => {
-      const floor   = container.clientHeight - 28;
+      const floor = container.clientHeight - 28;
+      if (startTimeRef.current === null) startTimeRef.current = Date.now();
       const elapsed = Date.now() - startTimeRef.current;
+      setElapsedMs(elapsed);
 
       setLetters((prev) =>
         prev.map((l) => {
@@ -422,15 +431,13 @@ export function TitleLetterDropGame({
     return () => { if (physicsRafRef.current) cancelAnimationFrame(physicsRafRef.current); };
   }, [gameReady, activeDragId]);
 
-  // ── Tümü yerleşince ─────────────────────────────────────────────────────
+  // ── Tümü yerleşince (onComplete bir kez) ─────────────────────────────────
 
   useEffect(() => {
-    const real = letters.filter((l) => l.char !== "|");
-    if (real.length > 0 && real.every((l) => l.placed)) {
-      setAllPlaced(true);
-      onComplete?.(score);
-    }
-  }, [letters, score, onComplete]);
+    if (!allPlaced || completionFiredRef.current) return;
+    completionFiredRef.current = true;
+    onComplete?.(score);
+  }, [allPlaced, score, onComplete]);
 
   // ── Parçacık patlaması — 50-puan örneği boyutu, biraz yavaş ─────────────
 
@@ -513,7 +520,7 @@ export function TitleLetterDropGame({
       e.preventDefault();
       e.stopPropagation();
 
-      const letter = lettersRef.current.find((l) => l.id === id);
+      const letter = letters.find((l) => l.id === id);
       if (!letter || letter.placed) return;
 
       const container = containerRef.current;
@@ -569,7 +576,7 @@ export function TitleLetterDropGame({
         window.removeEventListener("pointercancel", onWinEnd);
       };
     },
-    [finishDrag],
+    [finishDrag, letters],
   );
 
   // ── Render ───────────────────────────────────────────────────────────────
@@ -727,7 +734,7 @@ export function TitleLetterDropGame({
       {/* ── Harfler ───────────────────────────────────────────────────── */}
       {letters.map((l) => {
         if (l.char === "|") return null;
-        const elapsed    = Date.now() - startTimeRef.current;
+        const elapsed = elapsedMs;
         const isDragging = activeDragId === l.id;
         if (elapsed < l.delay && !l.landed && !l.placed) return null;
 
