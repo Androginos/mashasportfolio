@@ -9,6 +9,7 @@ import {
 } from "@/components/SketchbookPopup";
 import { PastelShaderBackground } from "@/components/PastelShaderBackground";
 import { TitleLetterDropGame } from "@/components/TitleLetterDropGame";
+import { SpeechBubble } from "@/components/SpeechBubble";
 import { mascotPngSrc } from "@/lib/mascotAssets";
 import type { SketchbookDrawing } from "@/lib/publicDrawings";
 
@@ -34,6 +35,8 @@ const translations: Record<
     /** Başlık oyunu: {score} yer tutucu */
     titleGameScoreFmt: string;
     titleGameCompleteFmt: string;
+    pencilBubble: string;
+    brushBubble: string;
   }
 > = {
   en: {
@@ -52,6 +55,8 @@ const translations: Record<
     mascotAlt: "Main character",
     titleGameScoreFmt: "⭐ {score} points",
     titleGameCompleteFmt: "🎉 {score} points! Great!",
+    pencilBubble: "my pencil drawings",
+    brushBubble: "my brush drawings",
   },
   uk: {
     badge: "Виставка малюнків маленької художниці",
@@ -69,6 +74,8 @@ const translations: Record<
     mascotAlt: "Головний персонаж",
     titleGameScoreFmt: "⭐ {score} балів",
     titleGameCompleteFmt: "🎉 {score} балів! Чудово!",
+    pencilBubble: "мої малюнки олівцем",
+    brushBubble: "мої малюнки пензликом",
   },
   ru: {
     badge: "Выставка рисунков маленькой художницы",
@@ -86,6 +93,8 @@ const translations: Record<
     mascotAlt: "Главный персонаж",
     titleGameScoreFmt: "⭐ {score} очков",
     titleGameCompleteFmt: "🎉 {score} очков! Отлично!",
+    pencilBubble: "мои рисунки карандашом",
+    brushBubble: "мои рисунки кистью",
   },
   pl: {
     badge: "Wystawa rysunków małej artystki",
@@ -103,6 +112,8 @@ const translations: Record<
     mascotAlt: "Glowna postac",
     titleGameScoreFmt: "⭐ {score} pkt",
     titleGameCompleteFmt: "🎉 {score} pkt! Świetnie!",
+    pencilBubble: "moje rysunki ołówkiem",
+    brushBubble: "moje rysunki pędzlem",
   },
 };
 
@@ -164,13 +175,6 @@ export default function PortfolioClient({
     setHoveredTool(null);
     setOpenAlbum(tool);
   };
-
-  const toolLineLabel =
-    hoveredTool === "pencil"
-      ? t.pencilDrawings
-      : hoveredTool === "brush"
-        ? t.brushDrawings
-        : t.chooseTool;
 
   const renderWaveText = (text: string) => (
     <span className="inline-flex flex-wrap items-center justify-center gap-[1px]">
@@ -251,24 +255,6 @@ export default function PortfolioClient({
         ) : (
           <div className="flex w-full max-w-full flex-1 flex-col px-1 py-2 max-md:min-h-[calc(100dvh-5.75rem)] max-md:justify-center md:min-h-[70vh] md:flex-none md:justify-start md:pt-4">
             <div className="flex w-full flex-col items-center gap-0.5 md:min-h-0 md:flex-1 md:gap-1.5">
-              <p
-                className={`iso-tool-text relative z-10 mx-auto flex w-full max-w-md shrink-0 justify-center px-3 py-0 text-center text-2xl font-extrabold tracking-wide transition-all duration-300 md:text-3xl ${
-                  hoveredTool ? "text-[#fff2e7]" : "text-[#fff6ee]"
-                }`}
-                style={{
-                  textShadow: hoveredTool
-                    ? "1.6px 0 rgba(0,0,0,0.75), -1.6px 0 rgba(0,0,0,0.75), 0 1.6px rgba(0,0,0,0.75), 0 -1.6px rgba(0,0,0,0.75), 0 0 8px rgba(255, 182, 216, 0.32)"
-                    : "1.4px 0 rgba(0,0,0,0.7), -1.4px 0 rgba(0,0,0,0.7), 0 1.4px rgba(0,0,0,0.7), 0 -1.4px rgba(0,0,0,0.7), 0 0 6px rgba(255, 182, 216, 0.24)",
-                }}
-              >
-                <span
-                  key={toolLineLabel}
-                  className="flex w-full flex-wrap justify-center"
-                >
-                  {renderWaveText(toolLineLabel)}
-                </span>
-              </p>
-
               <div className="flex w-full shrink-0 flex-col items-center justify-center md:min-h-0 md:flex-1">
             {/*
               Tek kutu: karakter + kalem + fırça aynı ölçekte (absolute inset-0 katmanlar).
@@ -277,65 +263,97 @@ export default function PortfolioClient({
               Mobil: geniş ekran hissi (yüksek px üst sınırı, tam genişlik vw).
               Masaüstü (md+): tarayıcıda ~%20 daha küçük → önceki 90vw/1008 → 72vw/806.
             */}
-            <div className="relative mx-auto aspect-square w-[min(100vw,1024px)] max-w-[100%] shrink-0 md:w-[min(72vw,806px)]">
-              <Image
-                src={mascotPngSrc("mainchar")}
-                alt={t.mascotAlt}
-                fill
-                priority
-                className="z-10 object-contain"
-              />
+            <div className="relative mx-auto aspect-square w-[min(100vw,1024px)] max-w-[100%] shrink-0 overflow-visible md:w-[min(72vw,806px)]">
+              {/*
+                Mobil: mainchar + pencil + brush + hit aynı ölçekte %40 büyür, origin-center ile merkezde kalır.
+                Balon bu sarmalayıcının dışında — kutunun üst ortasında sabit (ölçeklenmez).
+              */}
+              <div className="absolute inset-0 max-md:origin-center max-md:scale-[1.4]">
+                <Image
+                  src={mascotPngSrc("mainchar")}
+                  alt={t.mascotAlt}
+                  fill
+                  priority
+                  className="z-10 object-contain"
+                />
 
-              <div
-                className={`pointer-events-none absolute inset-0 z-30 origin-center transition-transform duration-300 ease-out ${
+                <div
+                  className={`pointer-events-none absolute inset-0 z-30 transition duration-200 ${
+                    hoveredTool === "pencil"
+                      ? "scale-[1.03] drop-shadow-[0_0_30px_rgba(255,66,196,0.95)]"
+                      : "md:hover:scale-[1.02] md:hover:drop-shadow-[0_0_24px_rgba(255,66,196,0.8)]"
+                  }`}
+                >
+                  <Image
+                    src={mascotPngSrc("pencil")}
+                    alt={t.pencil}
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+
+                <div
+                  className={`pointer-events-none absolute inset-0 z-40 transition duration-200 ${
+                    hoveredTool === "brush"
+                      ? "scale-[1.03] drop-shadow-[0_0_30px_rgba(255,66,196,0.95)]"
+                      : "md:hover:scale-[1.02] md:hover:drop-shadow-[0_0_24px_rgba(255,66,196,0.8)]"
+                  }`}
+                >
+                  <Image
+                    src={mascotPngSrc("brush")}
+                    alt={t.brush}
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+
+                <div
+                  ref={mascotHitRef}
+                  role="presentation"
+                  className="absolute inset-0 z-50 cursor-pointer touch-manipulation rounded-full"
+                  style={{ touchAction: "manipulation" }}
+                  onPointerMove={(e) => {
+                    if (e.pointerType === "mouse") updateHoverFromPointer(e);
+                  }}
+                  onPointerLeave={() => setHoveredTool(null)}
+                  onPointerDown={(e) => {
+                    if (e.pointerType === "touch" || e.pointerType === "pen") {
+                      updateHoverFromPointer(e);
+                    }
+                  }}
+                  onPointerUp={(e) => {
+                    if (e.pointerType === "mouse" && e.button !== 0) return;
+                    openToolFromPointer(e);
+                  }}
+                />
+              </div>
+
+              <SpeechBubble
+                text={
                   hoveredTool === "pencil"
-                    ? "scale-[1.08] drop-shadow-[0_0_32px_rgba(255,66,196,0.95)]"
-                    : "scale-100"
-                }`}
-              >
-                <Image
-                  src={mascotPngSrc("pencil")}
-                  alt={t.pencil}
-                  fill
-                  className="object-contain"
-                />
-              </div>
-
-              <div
-                className={`pointer-events-none absolute inset-0 z-40 origin-center transition-transform duration-300 ease-out ${
-                  hoveredTool === "brush"
-                    ? "scale-[1.08] drop-shadow-[0_0_32px_rgba(255,66,196,0.95)]"
-                    : "scale-100"
-                }`}
-              >
-                <Image
-                  src={mascotPngSrc("brush")}
-                  alt={t.brush}
-                  fill
-                  className="object-contain"
-                />
-              </div>
-
-              <div
-                ref={mascotHitRef}
-                role="presentation"
-                className="absolute inset-0 z-50 cursor-pointer touch-manipulation rounded-full"
-                style={{ touchAction: "manipulation" }}
-                onPointerMove={(e) => {
-                  if (e.pointerType === "mouse") updateHoverFromPointer(e);
-                }}
-                onPointerLeave={() => setHoveredTool(null)}
-                onPointerDown={(e) => {
-                  if (e.pointerType === "touch" || e.pointerType === "pen") {
-                    updateHoverFromPointer(e);
-                  }
-                }}
-                onPointerUp={(e) => {
-                  if (e.pointerType === "mouse" && e.button !== 0) return;
-                  openToolFromPointer(e);
-                }}
+                    ? t.pencilBubble
+                    : t.brushBubble
+                }
+                visible={hoveredTool !== null}
               />
             </div>
+
+              {!hoveredTool ? (
+                <p
+                  className="iso-tool-text relative z-10 mx-auto mt-1 flex w-full max-w-md shrink-0 justify-center px-3 py-0 text-center text-2xl font-extrabold tracking-wide text-[#fff6ee] transition-opacity duration-300 md:mt-2 md:text-3xl"
+                  style={{
+                    textShadow:
+                      "1.4px 0 rgba(0,0,0,0.7), -1.4px 0 rgba(0,0,0,0.7), 0 1.4px rgba(0,0,0,0.7), 0 -1.4px rgba(0,0,0,0.7), 0 0 6px rgba(255, 182, 216, 0.24)",
+                  }}
+                >
+                  <span
+                    key={t.chooseTool}
+                    className="flex w-full flex-wrap justify-center"
+                  >
+                    {renderWaveText(t.chooseTool)}
+                  </span>
+                </p>
+              ) : null}
               </div>
             </div>
           </div>
