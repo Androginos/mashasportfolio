@@ -352,7 +352,7 @@ export default function PortfolioClient({
 
               <p
                 aria-hidden={hoveredTool !== null}
-                className="iso-tool-text relative z-10 mx-auto mt-1 flex w-full max-w-md shrink-0 justify-center px-3 py-0 text-center text-2xl font-extrabold tracking-wide text-[#fff6ee] transition-opacity duration-300 md:mt-2 md:text-3xl"
+                className="iso-tool-text relative z-10 mx-auto mt-[clamp(3.6rem,11vw,5.4rem)] flex w-full max-w-md shrink-0 justify-center px-3 py-0 text-center text-2xl font-extrabold tracking-wide text-[#fff6ee] transition-opacity duration-300 md:mt-2 md:text-3xl"
                 style={{
                   textShadow:
                     "1.4px 0 rgba(0,0,0,0.7), -1.4px 0 rgba(0,0,0,0.7), 0 1.4px rgba(0,0,0,0.7), 0 -1.4px rgba(0,0,0,0.7), 0 0 6px rgba(255, 182, 216, 0.24)",
