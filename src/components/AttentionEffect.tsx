@@ -27,23 +27,50 @@ const STARS: StarSeed[] = [
   { size: 15, color: "#FFA500", edge: "left", edgePos: 0.18, burst: 0.9, dur: 2.0, delay: 1.0 },
 ];
 
+const TOOL_STARS: StarSeed[] = [
+  ...STARS,
+  { size: 12, color: "#FFD700", edge: "top", edgePos: 0.08, burst: 1.16, dur: 2.2, delay: 0.1 },
+  { size: 13, color: "#FF6EC7", edge: "top", edgePos: 0.33, burst: 1.1, dur: 2.0, delay: 0.5 },
+  { size: 12, color: "#7EC8FF", edge: "top", edgePos: 0.68, burst: 1.18, dur: 2.3, delay: 0.85 },
+  { size: 13, color: "#FFA500", edge: "top", edgePos: 0.92, burst: 1.08, dur: 2.1, delay: 1.15 },
+  { size: 12, color: "#B57BFF", edge: "right", edgePos: 0.1, burst: 1.2, dur: 2.15, delay: 0.25 },
+  { size: 11, color: "#FF4444", edge: "right", edgePos: 0.34, burst: 1.14, dur: 2.4, delay: 0.6 },
+  { size: 13, color: "#FFD700", edge: "right", edgePos: 0.62, burst: 1.16, dur: 2.25, delay: 0.95 },
+  { size: 12, color: "#7EC8FF", edge: "right", edgePos: 0.9, burst: 1.1, dur: 2.05, delay: 1.3 },
+  { size: 12, color: "#FFA500", edge: "bottom", edgePos: 0.9, burst: 1.14, dur: 2.3, delay: 0.18 },
+  { size: 13, color: "#B57BFF", edge: "bottom", edgePos: 0.66, burst: 1.08, dur: 2.1, delay: 0.52 },
+  { size: 12, color: "#FF6EC7", edge: "bottom", edgePos: 0.3, burst: 1.2, dur: 2.35, delay: 0.87 },
+  { size: 11, color: "#FFD700", edge: "bottom", edgePos: 0.08, burst: 1.12, dur: 2.2, delay: 1.22 },
+  { size: 12, color: "#7EC8FF", edge: "left", edgePos: 0.9, burst: 1.12, dur: 2.1, delay: 0.32 },
+  { size: 11, color: "#FF6EC7", edge: "left", edgePos: 0.62, burst: 1.2, dur: 2.28, delay: 0.68 },
+  { size: 12, color: "#FFA500", edge: "left", edgePos: 0.34, burst: 1.1, dur: 2.18, delay: 1.02 },
+  { size: 13, color: "#FFD700", edge: "left", edgePos: 0.08, burst: 1.16, dur: 2.38, delay: 1.36 },
+];
+
 const STAR_CLIP =
   "polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)";
 
 function buildStars(
   size: { width: number; height: number },
-  config?: { burstScale?: number; sizeScale?: number; xPadRatio?: number; yPadRatio?: number }
+  seeds: StarSeed[],
+  config?: {
+    burstScale?: number;
+    sizeScale?: number;
+    xPadRatio?: number;
+    yPadRatio?: number;
+    burstMax?: number;
+  }
 ) {
   const { width, height } = size;
   const centerX = width / 2;
   const centerY = height / 2;
   const xPadding = Math.min(14, width * (config?.xPadRatio ?? 0.08));
   const yPadding = Math.min(10, height * (config?.yPadRatio ?? 0.22));
-  const baseBurst =
-    Math.max(28, Math.min(44, width * 0.18 + height * 0.28)) * (config?.burstScale ?? 1);
+  const burstMax = config?.burstMax ?? 44;
+  const baseBurst = Math.max(28, Math.min(burstMax, width * 0.18 + height * 0.28)) * (config?.burstScale ?? 1);
   const sizeScale = config?.sizeScale ?? 1;
 
-  return STARS.map((s) => {
+  return seeds.map((s) => {
     let x = centerX;
     let y = centerY;
 
@@ -95,7 +122,7 @@ export function ButtonAttention({ children }: { children: ReactNode }) {
     return () => observer.disconnect();
   }, []);
 
-  const renderedStars = useMemo(() => buildStars(size), [size]);
+  const renderedStars = useMemo(() => buildStars(size, STARS), [size]);
 
   return (
     <div
@@ -160,7 +187,14 @@ export function ToolAttention({
   }, []);
 
   const toolStars = useMemo(
-    () => buildStars(toolSize, { burstScale: 0.62, sizeScale: 0.78, xPadRatio: 0.12, yPadRatio: 0.12 }),
+    () =>
+      buildStars(toolSize, TOOL_STARS, {
+        burstScale: 1.28,
+        sizeScale: 0.8,
+        xPadRatio: 0.08,
+        yPadRatio: 0.08,
+        burstMax: 120,
+      }),
     [toolSize]
   );
 
@@ -173,6 +207,7 @@ export function ToolAttention({
         display: "block",
         width: "100%",
         height: "100%",
+        overflow: "visible",
       }}
     >
       {toolStars.map((s, i) => (

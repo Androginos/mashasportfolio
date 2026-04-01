@@ -20,7 +20,7 @@ export function SpeechBubble({ text, visible }: SpeechBubbleProps) {
       {visible && (
         <motion.div
           key={text}
-          className="pointer-events-none absolute -top-2 z-[60] max-md:-top-3"
+          className="pointer-events-none absolute -top-3 z-[60] max-md:-top-12"
           style={{ left: "50%" }}
           initial={{ x: "-50%", opacity: 0, scale: 0.75, y: 12 }}
           animate={{ x: "-50%", opacity: 1, scale: 1, y: 0 }}
@@ -28,6 +28,7 @@ export function SpeechBubble({ text, visible }: SpeechBubbleProps) {
           transition={{ type: "spring", stiffness: 420, damping: 26 }}
         >
           <div
+            className="max-md:scale-[0.8]"
             style={{
               position: "relative",
               background: "#fef9c3",
