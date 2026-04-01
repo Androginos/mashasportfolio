@@ -10,6 +10,7 @@ import {
 import { PastelShaderBackground } from "@/components/PastelShaderBackground";
 import { TitleLetterDropGame } from "@/components/TitleLetterDropGame";
 import { SpeechBubble } from "@/components/SpeechBubble";
+import { ButtonAttention, ToolAttention } from "@/components/AttentionEffect";
 import { mascotPngSrc } from "@/lib/mascotAssets";
 import type { SketchbookDrawing } from "@/lib/publicDrawings";
 
@@ -241,16 +242,19 @@ export default function PortfolioClient({
               scoreFmt={t.titleGameScoreFmt}
               completeFmt={t.titleGameCompleteFmt}
             />
-            <button
-              type="button"
-              className="rounded-full border border-white/75 bg-white/85 px-6 py-3 text-center text-base font-medium text-[#813f1a] shadow-md transition hover:bg-white/95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c76b9e]"
-              onClick={(e) => {
-                e.stopPropagation();
-                setStarted(true);
-              }}
-            >
-              {t.clickToStart}
-            </button>
+            <ButtonAttention>
+              <button
+                type="button"
+                className="rounded-full border border-white/75 bg-white/85 px-6 py-3 text-center text-base font-medium text-[#813f1a] shadow-md transition hover:bg-white/95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c76b9e]"
+                style={{ animation: "aeBtnCombo 2.8s ease-in-out infinite" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setStarted(true);
+                }}
+              >
+                {t.clickToStart}
+              </button>
+            </ButtonAttention>
           </div>
         ) : (
           <div className="flex w-full max-w-full flex-1 flex-col px-1 py-2 max-md:min-h-[calc(100dvh-5.75rem)] max-md:justify-center md:min-h-[70vh] md:flex-none md:justify-start md:pt-4">
@@ -277,34 +281,42 @@ export default function PortfolioClient({
                   className="z-10 object-contain"
                 />
 
-                <div
-                  className={`pointer-events-none absolute inset-0 z-30 transition duration-200 ${
-                    hoveredTool === "pencil"
-                      ? "scale-[1.03] drop-shadow-[0_0_30px_rgba(255,66,196,0.95)]"
-                      : "md:hover:scale-[1.02] md:hover:drop-shadow-[0_0_24px_rgba(255,66,196,0.8)]"
-                  }`}
-                >
-                  <Image
-                    src={mascotPngSrc("pencil")}
-                    alt={t.pencil}
-                    fill
-                    className="object-contain"
-                  />
+                <div className="pointer-events-none absolute inset-0 z-30">
+                  <ToolAttention delay={0} className="absolute inset-0">
+                    <div
+                      className={`absolute inset-0 transition duration-200 ${
+                        hoveredTool === "pencil"
+                          ? "scale-[1.03]"
+                          : "md:hover:scale-[1.02]"
+                      }`}
+                    >
+                      <Image
+                        src={mascotPngSrc("pencil")}
+                        alt={t.pencil}
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
+                  </ToolAttention>
                 </div>
 
-                <div
-                  className={`pointer-events-none absolute inset-0 z-40 transition duration-200 ${
-                    hoveredTool === "brush"
-                      ? "scale-[1.03] drop-shadow-[0_0_30px_rgba(255,66,196,0.95)]"
-                      : "md:hover:scale-[1.02] md:hover:drop-shadow-[0_0_24px_rgba(255,66,196,0.8)]"
-                  }`}
-                >
-                  <Image
-                    src={mascotPngSrc("brush")}
-                    alt={t.brush}
-                    fill
-                    className="object-contain"
-                  />
+                <div className="pointer-events-none absolute inset-0 z-40">
+                  <ToolAttention delay={0.55} className="absolute inset-0">
+                    <div
+                      className={`absolute inset-0 transition duration-200 ${
+                        hoveredTool === "brush"
+                          ? "scale-[1.03]"
+                          : "md:hover:scale-[1.02]"
+                      }`}
+                    >
+                      <Image
+                        src={mascotPngSrc("brush")}
+                        alt={t.brush}
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
+                  </ToolAttention>
                 </div>
 
                 <div
@@ -338,22 +350,23 @@ export default function PortfolioClient({
               />
             </div>
 
-              {!hoveredTool ? (
-                <p
-                  className="iso-tool-text relative z-10 mx-auto mt-1 flex w-full max-w-md shrink-0 justify-center px-3 py-0 text-center text-2xl font-extrabold tracking-wide text-[#fff6ee] transition-opacity duration-300 md:mt-2 md:text-3xl"
-                  style={{
-                    textShadow:
-                      "1.4px 0 rgba(0,0,0,0.7), -1.4px 0 rgba(0,0,0,0.7), 0 1.4px rgba(0,0,0,0.7), 0 -1.4px rgba(0,0,0,0.7), 0 0 6px rgba(255, 182, 216, 0.24)",
-                  }}
+              <p
+                aria-hidden={hoveredTool !== null}
+                className="iso-tool-text relative z-10 mx-auto mt-1 flex w-full max-w-md shrink-0 justify-center px-3 py-0 text-center text-2xl font-extrabold tracking-wide text-[#fff6ee] transition-opacity duration-300 md:mt-2 md:text-3xl"
+                style={{
+                  textShadow:
+                    "1.4px 0 rgba(0,0,0,0.7), -1.4px 0 rgba(0,0,0,0.7), 0 1.4px rgba(0,0,0,0.7), 0 -1.4px rgba(0,0,0,0.7), 0 0 6px rgba(255, 182, 216, 0.24)",
+                  opacity: hoveredTool ? 0 : 1,
+                  visibility: hoveredTool ? "hidden" : "visible",
+                }}
+              >
+                <span
+                  key={t.chooseTool}
+                  className="flex w-full flex-wrap justify-center"
                 >
-                  <span
-                    key={t.chooseTool}
-                    className="flex w-full flex-wrap justify-center"
-                  >
-                    {renderWaveText(t.chooseTool)}
-                  </span>
-                </p>
-              ) : null}
+                  {renderWaveText(t.chooseTool)}
+                </span>
+              </p>
               </div>
             </div>
           </div>

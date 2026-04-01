@@ -20,7 +20,7 @@ export function SpeechBubble({ text, visible }: SpeechBubbleProps) {
       {visible && (
         <motion.div
           key={text}
-          className="pointer-events-none absolute top-3 z-[60] max-md:top-2"
+          className="pointer-events-none absolute -top-2 z-[60] max-md:-top-3"
           style={{ left: "50%" }}
           initial={{ x: "-50%", opacity: 0, scale: 0.75, y: 12 }}
           animate={{ x: "-50%", opacity: 1, scale: 1, y: 0 }}
@@ -33,11 +33,11 @@ export function SpeechBubble({ text, visible }: SpeechBubbleProps) {
               background: "#fef9c3",
               border: "5px solid #f59e0b",
               borderRadius: "24px",
-              padding: "14px 28px",
+              padding: "10px 22px",
               whiteSpace: "nowrap",
               boxShadow: "4px 4px 0 #fbbf24",
               fontFamily: "var(--font-luckiest-guy), 'Luckiest Guy', cursive",
-              fontSize: "clamp(1.4rem, 4vw, 1.8rem)",
+              fontSize: "clamp(1.15rem, 3.2vw, 1.5rem)",
               color: "#92400e",
               userSelect: "none",
             }}
