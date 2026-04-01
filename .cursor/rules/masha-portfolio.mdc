@@ -1,51 +1,58 @@
 ---
-description: Masha portfolyo — mevcut sade akýþ ve stil kurallarý
+description: Masha portfolio UI akis ve stil kurallari
 alwaysApply: false
 ---
 
-# Masha Portfolio — Güncel Kurallar
+# Masha Portfolio - Guncel Kurallar
 
 ## Stack
 
 - Next.js (App Router), React, TypeScript, Tailwind CSS v4.
-- Remotion + @remotion/player arka plan shader için kurulu.
+- Remotion + @remotion/player arka plan shader icin kurulu.
 - Site fontu: **Luckiest Guy** (global).
 - Temel metin boyutu: 18px.
 
-## Güncel Akýþ
+## Guncel Akis
 
-1. Açýlýþta büyük `MASHA'S` / `DRAWINGS` baþlýðý görünür.
-2. Sayfaya týklayýnca ana karakter sahnesi açýlýr.
-3. `pencil` ve `brush` görselleri üst üste, týklanabilir seçim mantýðý aktif.
-4. **Galeri/popup/kitap görünümü þu an tamamen kaldýrýlmýþtýr.**
-5. Yeni galeri tasarýmý gelene kadar seçim sadece state/baþlýk metnini etkiler.
+1. Acilista buyuk `MASHA'S` / `DRAWINGS` basligi gorunur.
+2. Baslangic butonu yildizli dikkat efekti ile gorunur (`ButtonAttention`).
+3. Baslangictan sonra ana karakter sahnesi acilir.
+4. `pencil` ve `brush` gorselleri ust uste, tiklanabilir secim mantigi aktif.
+5. Tool hover sirasinda konusma balonu (`SpeechBubble`) gorunur.
+6. Album/popup akisi (`SketchbookBackdrop` / `SketchbookBook`) aktiftir.
 
-## Görseller
+## Gorseller
 
 - `public/mainchar.png`: Ana karakter.
-- `public/pencil.png` ve `public/brush.png`: Seçim overlayleri.
-- Yardýmcý eski görseller/klasörler olabilir ama aktif UI’da galeri render edilmez.
+- `public/pencil.png` ve `public/brush.png`: Secim overlayleri.
+- `public/drawings/*`: Album icerikleri.
 
 ## Dil ve UI
 
-- Dil seçimi sað üstte dropdown (glass stil).
+- Dil secimi sag ustte dropdown (glass stil).
 - Desteklenen diller: EN / UK / RU / PL.
-- Ana metinleri kullanýcý özellikle istemedikçe deðiþtirme.
+- Ana metinleri kullanici ozellikle istemedikce degistirme.
 
-## Stil Notlarý
+## Stil Notlari
 
-- Baþlýk harfleri `iso-letter` sýnýfý ile harf bazlý animasyonlu.
-- Tool metni harf bazlý dalga (`iso-tool-letter`) ile akar.
-- Tool metninde turuncu + beyaz fosfor stroke/gölge uygulanýr.
+- Baslik harfleri `iso-letter` sinifi ile harf bazli animasyonlu.
+- Tool metni harf bazli dalga (`iso-tool-letter`) ile akar.
+- Tool metninde turuncu + beyaz fosfor stroke/golge uygulanir.
+- `choose tool` metni hover sirasinda kaybolsa da alanini korur; layout ziplamasi yapilmaz.
+- Mobilde `choose tool` metni karakterin ustune binmemelidir; mobil margin ayarlari korunur.
+- Mobilde `SpeechBubble` daha kucuk ve daha yukari konumlandirilir.
+- Tool yildiz efektleri mobil ve desktop'ta gorunur, yogun ve tasabilir olmalidir (`overflow: visible`).
 
 ## Kod Konumu
 
 - Ana sayfa UI: `src/app/portfolio-client.tsx`
-- Sayfa giriþi: `src/app/page.tsx` (þu an sade, propssuz)
+- Sayfa girisi: `src/app/page.tsx` (su an sade, propssuz)
 - Genel stiller: `src/app/globals.css`
-- Font yükleme: `src/app/layout.tsx`
+- Font yukleme: `src/app/layout.tsx`
+- Dikkat efektleri: `src/components/AttentionEffect.tsx`
+- Konusma balonu: `src/components/SpeechBubble.tsx`
 - Shader: `src/components/PastelShaderRemotion.tsx`, `src/components/PastelShaderBackground.tsx`
 
 ## Not
 
-- `AGENTS.md` içindeki Next.js sürüm uyarýlarýný dikkate al.
+- `AGENTS.md` icindeki Next.js surum uyarilarini dikkate al.

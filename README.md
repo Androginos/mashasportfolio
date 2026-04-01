@@ -40,6 +40,14 @@ Başlık (`MASHA’S` / `DRAWINGS`) harfleri fizik + snap ile yerleştirilir; sl
 Ayrıntılı kurallar ve akış özeti: [`.cursor/rules/masha-portfolio.mdc`](.cursor/rules/masha-portfolio.mdc).  
 Ajan/Next uyarıları: [`AGENTS.md`](AGENTS.md).
 
+## Son UI notlari
+
+- Baslangic butonu `ButtonAttention` ile yildiz burst + buton animasyonu kullanir.
+- `pencil` ve `brush` katmanlari `ToolAttention` ile daha yumusak hareket + yogun yildiz efekti alir.
+- Tool yildizlari mobilde ve desktop'ta kapsayici disina tasabilir (`overflow: visible`).
+- `SpeechBubble` mobilde daha kucuk ve daha yukari konumlanir.
+- `choose a tool` metni hover'da gorunmez olsa da alanini korur; layout kaymasi engellenir.
+
 ## Deploy
 
 [Vercel](https://vercel.com) veya tercih ettiğin platformda `main` dalından `next build` ile yayınlanabilir. Resmî rehber: [Next.js — Deploying](https://nextjs.org/docs/app/building-your-application/deploying).
