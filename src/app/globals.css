@@ -43,17 +43,30 @@ body {
   }
 }
 
-/* Remotion pastel shader — tam görünür alan (vh şeritleri yerine dvh) */
-.pastel-shader-backdrop {
-  min-height: 100vh;
-  height: 100vh;
+/* Remotion pastel shader — boyut PastelShaderBackground inline (top/left/100%) ile verilir */
+
+/* Sketchbook modal — iOS scroll / taşma */
+.sketchbook-backdrop-root {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
 }
 
-@supports (height: 100dvh) {
-  .pastel-shader-backdrop {
-    min-height: 100dvh;
-    height: 100dvh;
-  }
+.sketchbook-backdrop-inner {
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+}
+
+.sketchbook-book-shell {
+  box-sizing: border-box;
+  width: min(92vw, 480px);
+  max-width: 100%;
+  max-height: calc(100dvh - 8rem);
+  min-height: 0;
 }
 
 .pastel-shader-player,

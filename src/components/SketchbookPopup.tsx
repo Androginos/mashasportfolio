@@ -11,7 +11,6 @@ import {
   useEffect,
   useCallback,
   forwardRef,
-  type CSSProperties,
   type ReactNode,
   type PointerEvent as ReactPointerEvent,
 } from "react";
@@ -29,17 +28,6 @@ const FLIP_MS = 460;
 
 /** A4 dikey */
 const A4_ASPECT = "1 / 1.414";
-
-/**
- * Albüm kabuğu: 92vw kullanma — padding’li üstten taşır (iPhone / büyük Android).
- * %100 = backdrop içi alan; üst sınır = A4 yüksekliği ekrana sığacak genişlik + masaüstü 480px.
- */
-const BOOK_SHELL_STYLE: CSSProperties = {
-  boxSizing: "border-box",
-  width: "100%",
-  maxWidth:
-    "min(480px, calc((100dvh - 9.5rem) / 1.414), calc(100vw - max(2rem, env(safe-area-inset-left) + env(safe-area-inset-right))))",
-};
 
 /** Ana sayfa teması: --background turuncu, --foreground koyu kahve */
 const BOOK_COVER_GRADIENT =
@@ -65,8 +53,7 @@ function ModalChrome({
   return (
     <div
       lang={contentLang}
-      className="flex w-full max-w-full flex-col items-center gap-2.5 overflow-x-clip"
-      style={BOOK_SHELL_STYLE}
+      className="sketchbook-book-shell flex w-full flex-col items-center gap-2.5 overflow-x-clip"
       onClick={(e) => e.stopPropagation()}
     >
       <div className="relative w-full max-w-full px-4 sm:px-8 md:px-11">
@@ -336,9 +323,8 @@ const SketchbookBackdropBase = forwardRef<HTMLDivElement, SketchbookBackdropProp
     return (
       <div
         ref={ref}
-        className="fixed inset-0 z-[80] overflow-y-auto overflow-x-hidden overscroll-y-contain"
+        className="sketchbook-backdrop-root fixed inset-0 z-[80] overflow-x-hidden overflow-y-hidden"
         style={{
-          /* backdrop-filter: flip animasyonunda bulanık örnekleme kayar; düz opak katman */
           background: "rgba(10, 8, 5, 0.94)",
         }}
         onClick={(e) => {
@@ -346,7 +332,7 @@ const SketchbookBackdropBase = forwardRef<HTMLDivElement, SketchbookBackdropProp
         }}
       >
         <div
-          className="box-border flex min-h-[100dvh] w-full min-w-0 max-w-full items-center justify-center px-4 py-6"
+          className="sketchbook-backdrop-inner flex w-full min-w-0 max-w-full items-center justify-center px-4 py-6"
           style={{
             paddingTop: "max(1.5rem, env(safe-area-inset-top))",
             paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
@@ -384,9 +370,17 @@ function SketchbookBookInner({
   const drag = useDrag(flip);
 
   useEffect(() => {
+    const scrollY = window.scrollY;
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
     document.body.style.overflow = "hidden";
     return () => {
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
       document.body.style.overflow = "";
+      window.scrollTo(0, scrollY);
     };
   }, []);
 

@@ -3,16 +3,31 @@
 import { Player } from "@remotion/player";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import type { CSSProperties } from "react";
 import { PastelShaderRemotion } from "./PastelShaderRemotion";
 
-function readVisualViewportSize() {
+function readInnerSize() {
   if (typeof window === "undefined") return { width: 1920, height: 1080 };
-  const vv = window.visualViewport;
   return {
-    width: Math.max(vv?.width ?? window.innerWidth, 1),
-    height: Math.max(vv?.height ?? window.innerHeight, 1),
+    width: Math.max(window.innerWidth, 1),
+    height: Math.max(window.innerHeight, 1),
   };
 }
+
+/** fixed katman: will-change yok — stacking context şişirmesin */
+const FIXED_LAYER_STYLE: CSSProperties = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100%",
+  height: "100%",
+  zIndex: 0,
+  pointerEvents: "none",
+  overflow: "hidden",
+  transform: "translateZ(0)",
+  backfaceVisibility: "hidden",
+  WebkitBackfaceVisibility: "hidden",
+};
 
 export const PastelShaderBackground = () => {
   const [mounted, setMounted] = useState(false);
@@ -29,25 +44,20 @@ export const PastelShaderBackground = () => {
       if (debounce) clearTimeout(debounce);
       debounce = setTimeout(() => {
         debounce = undefined;
-        setViewport(readVisualViewportSize());
+        setViewport(readInnerSize());
       }, 100);
     };
 
     scheduleUpdate();
     window.addEventListener("resize", scheduleUpdate);
-    const vv = window.visualViewport;
-    vv?.addEventListener("resize", scheduleUpdate);
-    vv?.addEventListener("scroll", scheduleUpdate);
     return () => {
       if (debounce) clearTimeout(debounce);
       window.removeEventListener("resize", scheduleUpdate);
-      vv?.removeEventListener("resize", scheduleUpdate);
-      vv?.removeEventListener("scroll", scheduleUpdate);
     };
   }, []);
 
   const layer = (
-    <div className="pastel-shader-backdrop pointer-events-none fixed inset-0 z-0 w-full overflow-hidden [transform:translateZ(0)]">
+    <div className="pastel-shader-backdrop" style={FIXED_LAYER_STYLE}>
       <Player
         component={PastelShaderRemotion}
         durationInFrames={60 * 60}

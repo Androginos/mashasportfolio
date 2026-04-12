@@ -13,7 +13,6 @@ import {
   SketchbookBackdrop,
   SketchbookBook,
 } from "@/components/SketchbookPopup";
-import { PastelShaderBackground } from "@/components/PastelShaderBackground";
 import { TitleLetterDropGame } from "@/components/TitleLetterDropGame";
 import { SpeechBubble } from "@/components/SpeechBubble";
 import { ButtonAttention, ToolAttention } from "@/components/AttentionEffect";
@@ -144,6 +143,23 @@ function toolAtNormalizedPosition(nx: number, ny: number): Tool | null {
   return null;
 }
 
+/** getBoundingClientRect (CSS transform sonrası) ile layout (offset*) arası ölçek */
+function clientToNormalized(
+  el: HTMLDivElement,
+  clientX: number,
+  clientY: number,
+): { nx: number; ny: number } | null {
+  const rect = el.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) return null;
+  const scaleX = el.offsetWidth > 0 ? rect.width / el.offsetWidth : 1;
+  const scaleY = el.offsetHeight > 0 ? rect.height / el.offsetHeight : 1;
+  const nx = (clientX - rect.left) / (el.offsetWidth * scaleX);
+  const ny = (clientY - rect.top) / (el.offsetHeight * scaleY);
+  return { nx, ny };
+}
+
+const TAP_MOVE_THRESHOLD_PX = 10;
+
 export default function PortfolioClient({
   brushDrawings,
   pencilDrawings,
@@ -157,18 +173,18 @@ export default function PortfolioClient({
   const [openAlbum, setOpenAlbum] = useState<Tool | null>(null);
   const [hoveredTool, setHoveredTool] = useState<Tool | null>(null);
   const mascotHitRef = useRef<HTMLDivElement | null>(null);
-  /** Android/WebView: pointerup bazen gelmez; click yedeklemesi ile çift açılmayı önlemek için */
+  /** Tap başlangıcı — scroll ile pointerUp arasında kayma tespiti */
+  const tapStartRef = useRef<{ x: number; y: number } | null>(null);
+  /** pointerUp ile açıldıysa sentetik click çiftlemesini kes */
   const lastToolOpenAtRef = useRef(0);
   const t = translations[language];
 
   const updateHoverFromPointer = (e: ReactPointerEvent<HTMLDivElement>) => {
     const el = mascotHitRef.current;
     if (!el) return;
-    const rect = el.getBoundingClientRect();
-    if (rect.width <= 0 || rect.height <= 0) return;
-    const nx = (e.clientX - rect.left) / rect.width;
-    const ny = (e.clientY - rect.top) / rect.height;
-    setHoveredTool(toolAtNormalizedPosition(nx, ny));
+    const pos = clientToNormalized(el, e.clientX, e.clientY);
+    if (!pos) return;
+    setHoveredTool(toolAtNormalizedPosition(pos.nx, pos.ny));
   };
 
   const tryOpenToolAt = useCallback(
@@ -179,11 +195,9 @@ export default function PortfolioClient({
     ) => {
       const el = mascotHitRef.current;
       if (!el) return false;
-      const rect = el.getBoundingClientRect();
-      if (rect.width <= 0 || rect.height <= 0) return false;
-      const nx = (clientX - rect.left) / rect.width;
-      const ny = (clientY - rect.top) / rect.height;
-      const tool = toolAtNormalizedPosition(nx, ny);
+      const pos = clientToNormalized(el, clientX, clientY);
+      if (!pos) return false;
+      const tool = toolAtNormalizedPosition(pos.nx, pos.ny);
       if (!tool) return false;
       e?.preventDefault();
       e?.stopPropagation();
@@ -195,13 +209,40 @@ export default function PortfolioClient({
     [],
   );
 
+  const onMascotPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    tapStartRef.current = { x: e.clientX, y: e.clientY };
+    if (e.pointerType === "touch" || e.pointerType === "pen") {
+      updateHoverFromPointer(e);
+    }
+  };
+
   const onMascotPointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
+    const start = tapStartRef.current;
+    tapStartRef.current = null;
+
+    const isTouchLike =
+      e.pointerType === "touch" || e.pointerType === "pen";
+
+    if (start) {
+      const dx = e.clientX - start.x;
+      const dy = e.clientY - start.y;
+      if (dx * dx + dy * dy > TAP_MOVE_THRESHOLD_PX * TAP_MOVE_THRESHOLD_PX) {
+        return;
+      }
+    } else if (isTouchLike) {
+      return;
+    }
+
     tryOpenToolAt(e.clientX, e.clientY, e);
   };
 
+  const onMascotPointerCancel = () => {
+    tapStartRef.current = null;
+  };
+
   const onMascotClick = (e: ReactMouseEvent<HTMLDivElement>) => {
-    if (Date.now() - lastToolOpenAtRef.current < 450) return;
+    if (Date.now() - lastToolOpenAtRef.current < 220) return;
     tryOpenToolAt(e.clientX, e.clientY, e);
   };
 
@@ -224,7 +265,6 @@ export default function PortfolioClient({
       lang={language}
       className="relative mx-auto flex min-h-[100dvh] min-h-screen w-full max-w-6xl flex-col items-center justify-center px-6 py-4 text-center md:py-6"
     >
-      <PastelShaderBackground />
       <div
         className="absolute right-4 top-4 z-[70] md:right-6 md:top-6"
         onClick={(event) => event.stopPropagation()}
@@ -235,7 +275,7 @@ export default function PortfolioClient({
         >
           Language
         </label>
-        <div className="rounded-full border border-white/55 bg-white/28 px-3 py-1 shadow-[0_8px_24px_rgba(26,20,39,0.2)] backdrop-blur-md">
+        <div className="rounded-full border border-white/55 bg-white/45 px-3 py-1 shadow-[0_8px_24px_rgba(26,20,39,0.2)]">
           <select
             id="lang-select"
             value={language}
@@ -346,25 +386,25 @@ export default function PortfolioClient({
                     </div>
                   </ToolAttention>
                 </div>
-
-                <div
-                  ref={mascotHitRef}
-                  role="presentation"
-                  className="absolute inset-0 z-50 cursor-pointer touch-manipulation rounded-full"
-                  style={{ touchAction: "manipulation" }}
-                  onPointerMove={(e) => {
-                    if (e.pointerType === "mouse") updateHoverFromPointer(e);
-                  }}
-                  onPointerLeave={() => setHoveredTool(null)}
-                  onPointerDown={(e) => {
-                    if (e.pointerType === "touch" || e.pointerType === "pen") {
-                      updateHoverFromPointer(e);
-                    }
-                  }}
-                  onPointerUp={onMascotPointerUp}
-                  onClick={onMascotClick}
-                />
               </div>
+
+              <div
+                ref={mascotHitRef}
+                role="presentation"
+                className="absolute inset-0 z-50 cursor-pointer touch-manipulation rounded-full"
+                style={{ touchAction: "manipulation" }}
+                onPointerMove={(e) => {
+                  if (e.pointerType === "mouse") updateHoverFromPointer(e);
+                }}
+                onPointerLeave={() => {
+                  setHoveredTool(null);
+                  tapStartRef.current = null;
+                }}
+                onPointerDown={onMascotPointerDown}
+                onPointerUp={onMascotPointerUp}
+                onPointerCancel={onMascotPointerCancel}
+                onClick={onMascotClick}
+              />
 
               <SpeechBubble
                 text={
