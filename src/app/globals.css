@@ -31,10 +31,7 @@ body {
   color: var(--foreground);
   font-family: var(--font-luckiest-guy), Arial, Helvetica, sans-serif;
   font-size: 18px;
-  cursor:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 24 24' fill='none' stroke='%23ff8ac0' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath fill='%23ffe0f0' d='M12 2 14.8 8.2 21 9l-4.5 4.2 1.2 6-5.7-3.1-5.7 3.1 1.2-6L3 9l6.2-.8z'/%3E%3C/svg%3E")
-      8 8,
-    auto;
+  cursor: url("/cursors/cat-normal.png") 16 16, auto;
 }
 
 @supports (height: 100dvh) {
@@ -88,11 +85,18 @@ body {
 
 a,
 button,
-img {
-  cursor:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 24 24' fill='none' stroke='%23ff8ac0' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath fill='%23ffe0f0' d='M12 2 14.8 8.2 21 9l-4.5 4.2 1.2 6-5.7-3.1-5.7 3.1 1.2-6L3 9l6.2-.8z'/%3E%3C/svg%3E")
-      8 8,
-    pointer;
+img,
+[role="button"],
+[role="presentation"],
+[style*="cursor"] {
+  cursor: url("/cursors/cat-hover.png") 16 16, auto;
+}
+
+/* Tailwind — etkileşimde cat-hover (el yedeği yok) */
+.cursor-pointer,
+.cursor-grab,
+.cursor-grabbing {
+  cursor: url("/cursors/cat-hover.png") 16 16, auto;
 }
 
 .wavy-frame {
