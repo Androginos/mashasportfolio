@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   Caveat,
   Fredoka,
@@ -38,6 +38,13 @@ const caveat = Caveat({
 export const metadata: Metadata = {
   title: "Minik Sanatci Portfoy",
   description: "9 yasindaki bir kiz cocugu icin cizim sergisi portfoyu",
+};
+
+/** Mobil tarayıcılarda (özellikle Android) ölçek ve güvenli alan tutarlılığı için */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

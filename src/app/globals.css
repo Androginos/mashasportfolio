@@ -14,6 +14,8 @@
 /* Mobil: adres çubuğu / güvenli alan — arka plan boşluk bırakmasın */
 html {
   min-height: 100%;
+  /* overflow:hidden (modal) ile scrollbar kaybolunca yatay kaymayı azaltır */
+  scrollbar-gutter: stable;
 }
 
 @supports (height: 100dvh) {

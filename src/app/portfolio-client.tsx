@@ -1,7 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import {
+  useCallback,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { AnimatePresence } from "framer-motion";
 import {
   SketchbookBackdrop,
@@ -151,6 +157,8 @@ export default function PortfolioClient({
   const [openAlbum, setOpenAlbum] = useState<Tool | null>(null);
   const [hoveredTool, setHoveredTool] = useState<Tool | null>(null);
   const mascotHitRef = useRef<HTMLDivElement | null>(null);
+  /** Android/WebView: pointerup bazen gelmez; click yedeklemesi ile çift açılmayı önlemek için */
+  const lastToolOpenAtRef = useRef(0);
   const t = translations[language];
 
   const updateHoverFromPointer = (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -163,18 +171,38 @@ export default function PortfolioClient({
     setHoveredTool(toolAtNormalizedPosition(nx, ny));
   };
 
-  const openToolFromPointer = (e: ReactPointerEvent<HTMLDivElement>) => {
-    const el = mascotHitRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const nx = (e.clientX - rect.left) / rect.width;
-    const ny = (e.clientY - rect.top) / rect.height;
-    const tool = toolAtNormalizedPosition(nx, ny);
-    if (!tool) return;
-    e.preventDefault();
-    e.stopPropagation();
-    setHoveredTool(null);
-    setOpenAlbum(tool);
+  const tryOpenToolAt = useCallback(
+    (
+      clientX: number,
+      clientY: number,
+      e?: { preventDefault(): void; stopPropagation(): void },
+    ) => {
+      const el = mascotHitRef.current;
+      if (!el) return false;
+      const rect = el.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return false;
+      const nx = (clientX - rect.left) / rect.width;
+      const ny = (clientY - rect.top) / rect.height;
+      const tool = toolAtNormalizedPosition(nx, ny);
+      if (!tool) return false;
+      e?.preventDefault();
+      e?.stopPropagation();
+      lastToolOpenAtRef.current = Date.now();
+      setHoveredTool(null);
+      setOpenAlbum(tool);
+      return true;
+    },
+    [],
+  );
+
+  const onMascotPointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    tryOpenToolAt(e.clientX, e.clientY, e);
+  };
+
+  const onMascotClick = (e: ReactMouseEvent<HTMLDivElement>) => {
+    if (Date.now() - lastToolOpenAtRef.current < 450) return;
+    tryOpenToolAt(e.clientX, e.clientY, e);
   };
 
   const renderWaveText = (text: string) => (
@@ -333,10 +361,8 @@ export default function PortfolioClient({
                       updateHoverFromPointer(e);
                     }
                   }}
-                  onPointerUp={(e) => {
-                    if (e.pointerType === "mouse" && e.button !== 0) return;
-                    openToolFromPointer(e);
-                  }}
+                  onPointerUp={onMascotPointerUp}
+                  onClick={onMascotClick}
                 />
               </div>
 

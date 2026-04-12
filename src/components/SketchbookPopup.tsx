@@ -11,6 +11,7 @@ import {
   useEffect,
   useCallback,
   forwardRef,
+  type CSSProperties,
   type ReactNode,
   type PointerEvent as ReactPointerEvent,
 } from "react";
@@ -28,6 +29,17 @@ const FLIP_MS = 460;
 
 /** A4 dikey */
 const A4_ASPECT = "1 / 1.414";
+
+/**
+ * Albüm kabuğu: 92vw kullanma — padding’li üstten taşır (iPhone / büyük Android).
+ * %100 = backdrop içi alan; üst sınır = A4 yüksekliği ekrana sığacak genişlik + masaüstü 480px.
+ */
+const BOOK_SHELL_STYLE: CSSProperties = {
+  boxSizing: "border-box",
+  width: "100%",
+  maxWidth:
+    "min(480px, calc((100dvh - 9.5rem) / 1.414), calc(100vw - max(2rem, env(safe-area-inset-left) + env(safe-area-inset-right))))",
+};
 
 /** Ana sayfa teması: --background turuncu, --foreground koyu kahve */
 const BOOK_COVER_GRADIENT =
@@ -53,10 +65,11 @@ function ModalChrome({
   return (
     <div
       lang={contentLang}
-      className="flex w-full max-w-[min(92vw,480px)] flex-col items-center gap-2.5"
+      className="flex w-full max-w-full flex-col items-center gap-2.5 overflow-x-clip"
+      style={BOOK_SHELL_STYLE}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="relative w-full px-11">
+      <div className="relative w-full max-w-full px-4 sm:px-8 md:px-11">
         <h2
           className="text-center text-lg font-extrabold leading-snug tracking-wide text-[#fff2e7] md:text-xl"
           style={{
@@ -323,17 +336,29 @@ const SketchbookBackdropBase = forwardRef<HTMLDivElement, SketchbookBackdropProp
     return (
       <div
         ref={ref}
-        className="fixed inset-0 z-[80] flex items-center justify-center p-4"
+        className="fixed inset-0 z-[80] overflow-y-auto overflow-x-hidden overscroll-y-contain"
         style={{
-          background: "rgba(8,6,4,0.82)",
-          backdropFilter: "blur(10px)",
-          WebkitBackdropFilter: "blur(10px)",
+          /* backdrop-filter: flip animasyonunda bulanık örnekleme kayar; düz opak katman */
+          background: "rgba(10, 8, 5, 0.94)",
         }}
         onClick={(e) => {
           if (e.target === e.currentTarget) onBackdropClose();
         }}
       >
-        {children}
+        <div
+          className="box-border flex min-h-[100dvh] w-full min-w-0 max-w-full items-center justify-center px-4 py-6"
+          style={{
+            paddingTop: "max(1.5rem, env(safe-area-inset-top))",
+            paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
+            paddingLeft: "max(1rem, env(safe-area-inset-left))",
+            paddingRight: "max(1rem, env(safe-area-inset-right))",
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) onBackdropClose();
+          }}
+        >
+          {children}
+        </div>
       </div>
     );
   },
@@ -399,7 +424,7 @@ function SketchbookBookInner({
         contentLang={uiLanguage}
       >
         <motion.div
-          className="relative w-full overflow-hidden rounded-2xl shadow-2xl"
+          className="relative w-full min-w-0 max-w-full overflow-hidden rounded-2xl shadow-2xl"
           initial={{ scale: 0.84, y: 32, opacity: 0 }}
           animate={{ scale: 1, y: 0, opacity: 1 }}
           exit={{ scale: 0.84, y: 32, opacity: 0 }}
@@ -429,7 +454,7 @@ function SketchbookBookInner({
       contentLang={uiLanguage}
     >
       <motion.div
-        className="relative w-full"
+        className="relative w-full min-w-0 max-w-full"
         style={{
           aspectRatio: A4_ASPECT,
         }}
